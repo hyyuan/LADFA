@@ -1,0 +1,29 @@
+# Privacy Policy Analysis Framework - Dependencies
+
+# Core LLM and AI libraries
+groq>=0.4.0
+llama-index>=0.9.0
+llama-index-embeddings-huggingface>=0.1.0
+
+# Web scraping and document processing
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+pypdf>=3.17.0
+
+# Network analysis and visualization
+networkx>=3.0
+pyvis>=0.3.0
+
+# Natural Language Processing
+spacy>=3.7.0
+
+# Data validation and processing
+pydantic>=2.0.0
+inflect>=7.0.0
+
+# Utilities
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Note: After installing requirements, download spaCy model:
+# python -m spacy download en_core_web_sm

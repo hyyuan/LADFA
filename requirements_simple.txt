@@ -1,0 +1,29 @@
+# Simplified requirements - core dependencies only
+# Install these first, then add others as needed
+
+# Core LLM and AI
+groq>=0.4.0
+
+# Document processing
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+pypdf>=3.17.0
+
+# Network analysis and visualization
+networkx>=3.0
+pyvis>=0.3.0
+
+# NLP (basic)
+spacy>=3.7.0
+
+# Data processing
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Validation
+pydantic>=2.0.0
+inflect>=7.0.0
+
+# For RAG - install separately if needed:
+# llama-index-core
+# llama-index-embeddings-huggingface

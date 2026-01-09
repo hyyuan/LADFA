@@ -1,0 +1,107 @@
+{
+  "DataCategory": [
+    {
+      "name": "Finance",
+      "description": "Financial data, such as credit/debit card data, other payment information, credit scores, etc.",
+      "items": ["bank account number", "credit card number", "debit card number", "personal income", "transaction history", "balance", "bank account name",
+      "currency", "IBAN", "sort code", "cvc", "cvv", "cvv2", "expiry date", "issue date", "bank name", "virtual currency account", "wallet address", "primary card number","PAN",
+      "international bank account number", "BIC", "SWIFT", "bank identifier code", "crypotocurrency", "crypto", "routing number", "transaction code"]
+    },
+    {
+      "name": "Health",
+      "description": "Health Information, such as information about health conditions, prescriptions, medication, as well as health monitoring data, e.g., heart rate, step count, activity level, etc.",
+      "items": ["Diet Information", "Blood type", "Weight", "Height", "Step count", "Activity level", "Floors Climbed", "active time",
+      "calories burned", "Daily Movements", "Stress level", "Mood/Emotional state", "psychiatric care", "psychotherapy notes", "Insulin readings",
+      "Blood glucose", "Temperature", "Blood pressure", "Heart rate", "Fiber", "Irregular heart beat detection", "Pulse rate", "Breathing rate",
+      "Cholesterol", "Heart sound", "Electrocardiogram", "Water percentage", "Fat", "Muscle", "Metabolic rates and levels", "Body mass index (BMI)",
+      "Metabolic information", "Body shape", "Upper leg measurement", "Lower leg measurement", "Trunk measurement", "Chest measurement", "Triceps measurement",
+      "Bicep measurement", "Cloth size", "Bra size", "Apparel size", "Estimated stride", "Foot measurement", "Eye Color", "Hip measurements", "Waist Measurements"]
+    },
+    {
+      "name": "Demographic",
+      "description": "Demographic Information, e.g., gender, age, occupation, education, etc.",
+      "items": ["gender", "age", "occupation", "education", "racial or ethnic origin", "native language", "marital Status", "political opinions", "religious beliefs",
+      "nationality", "title", "children information"]
+    },
+    {
+      "name": "Contact Information/Contact Details",
+      "description": "Contact Information and contact details.",
+      "items": ["Contact details", "Contact information", "Full Name", "Home address", "Street", "Number of the house", "Number of the apartment", "Fax number", "Phone number", "Email Address",
+       "Mobile phone number", "Home Phone Number", "Fax Number", "Shipping/Billing address", "Work email address", "City", "Country", "Postal address",
+       "Emergency contacts' phone number", "Security phone number", "Security email address"]
+    },
+    {
+      "name": "Location",
+      "description": "Geo-location information (e.g., user's current location) regardless of granularity, i.e., could be exact location, ZIP code, city-level.",
+      "items": ["location data", "Location (GPS)", "Location History", "GSM, UMTS, and GPS location data"]
+    },
+    {
+      "name": "Personal identity identifier",
+      "description": "Identifiers that uniquely identify a person,e.g., SSN, driver's license number, etc.",
+      "items": ["Social security number (ssn)", "Driver's license number", "State identification card number", "Insurance policy number", "Passport number", "Number of the identification document", "Personal identification numbers",
+      "personal identification numbers (PINs)", "Tax identification number", "National identity number", "Electoral Register", "Personal ID", "birth certificate numbers", "resident registration numbers",
+      "Employer ID", "Vehicle ID number", "Patient identifier", "Resident registration number", "Civic registration number", "Registry number of social insurance (RNSI)", "national insurance number",
+      "Personal ID/ Identification document", "KYC Status", "PAN Document", "National identity card details", "Electoral Register", "Licence Plate Number", "Vehicle Serial Number",
+      "Medical record number", "Health record number", "National provider identification (``NPI'') numbers", "National identity number"]
+    },
+    {
+      "name": "Online identifier",
+      "description": "Permanent (e.g., device IDs, MAC address) or temporary (e.g., IP address) identifiers needed to establish a connection for the current browsing session. Identifiers locally stored on user's device by the company/organization or third-parties including cookies, beacons, or similar that are commonly used to uniquely identify users, but that are not essential to establish a connection with the user’s device or to provide a service.",
+      "items": ["device IDs", "MAC address", "IP address", "Log in data to online services", "Identifiers provided by an application", "Cookies", "Radio frequency identification (RFID) tags",
+      "Network Communications", "Wifi Connections", "Time Zone Information", "WLAN/WiFi open hot-spots", "Cell towers", "Google Advertiser ID", "Web beacon", "Email pixels", "SDKs", "Tracking URLs", "Scripts"]
+    },
+    {
+      "name": "Device information",
+      "description": "Technical information about devices (including PC, mobile phones, etc.) used",
+      "items":  ["Operating system (OS)", "Universal unique identifier (UDID)", "Serial Number", "Language settings", "Internet service provider", "Device settings", "ROM version", "Hardware version", "Files on the device", "Screen resolution", "Type of device",
+      "IMSI", "ICC-ID", "IMEI", "Files", "Media", "Time zone settings", "Mobile network information", "Calendar entries", "Bookmarks", "Notes", "Alarm clocks", "Model", "Battery level", "Mobile service provider", "Bluetooth devices",
+      "Name of Device", "Accounts on Device"]
+    },
+    {
+      "name": "Biometric information",
+      "description": "Unique, measurable biological characteristics and traits of a person that can be used for identification and authentication purposes",
+      "items": ["Finger prints", "Palm prints", "Eye iris images", "Image Data", "Video Data", "Sound Data", "Photos", "Voice recordings", "Voice command","Voice", "Voice data","Biological traits/markers", "Video",
+      "Eye Movements", "Nude Body Images", "Iris Pattern", "Ear Information", "Gait", "Gesture", "Lip Motion", "Style of typing", "Retina scan", "Facial recognition data"]
+    },
+    {
+      "name": "User online activities",
+      "description": "The user's online activities on the website/app or other websites/apps, e.g., pages visited, time spent on pages, general user behavior online, etc.",
+      "items": ["page visited", "time spent on pages", "online behaviour", "Browsing history", "Links clicked", "online chats", "Search queries",
+      "Browser type", "Browser version", "Browser plugins", "Browsing history", "Language settings"]
+    },
+    {
+      "name": "User profile",
+      "description": "The user's profile on the website/app and its contents, e.g., data in user profile, data that user uploaded to website, user comments, user profile preferences, etc. This is common for websites/apps where users can create an account or profile, e.g., on twitter, youtube, Facebook, Amazon, etc.",
+      "items": ["account name", "user name", "user comments", "user review", "user profile"]
+    },
+    {
+      "name": "Social media data",
+      "description": "User profile and data from a social media website/app or other third party service to which the user gave the first party access, e.g., by connecting with Facebook, twitter, or other services. Exchanged data may include user profile, photos, comments, friends, etc.",
+      "items": ["Generated contents (photos etc)", "Contacts (Followers, Followees, Friends, Their gender etc)", "Likes", "Group membership", "Biography",
+      "photos about peoples life", "Holiday Photos", "photos about their children", "Birthday Party Photos", "interactions in social networks"]
+    },
+    {
+      "name": "Criminal records/Court judgements",
+      "description": "Criminal records detail an individual's interactions with the criminal justice system, encompassing arrests, charges, indictments, convictions, and sentences, while court judgments represent formal legal decisions by courts, specifying findings, rulings, and outcomes of legal proceedings.",
+      "items": ["Punishment or other criminal sanction", "Closed court sittings in civil matters", "Decisions on penalty/fines", "Criminal convictions", "Child abuse data",
+      "Criminal records of convictions and offences", "Convictions", "Abuse Data", "Administrative Sanctions", "Cavit Search Data"]
+    },
+    {
+      "name": "Generic personal information",
+      "description": "No specific type of information is mentioned, but the policy talks about 'your information', 'your data', 'personal information', 'personal data' or 'personal identifiable information' in general.",
+      "items": ["your information","your data","personal data","personal identifiable information", "personal information"]
+    },
+    {
+      "name": "Survey data",
+      "description": "Any data that is collected through surveys."
+    },
+    {
+      "name": "Other",
+      "description": "A specific type of information not covered by the above categories."
+    },
+    {
+      "name": "Unspecified",
+      "description": "The type of information is not explicitly stated or unclear (e.g., refers to 'information' very generically)."
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+# API Keys and Secrets
+GROQ_API_KEY
+GROQ_API_KEY_GITHUB
+*.key
+*.secret
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Vector Indexes
+data_categories_index/
+data_consumer_index/
+data_processing_purpose_index/
+data_processing_method_index/
+
+# Results and Outputs
+results/
+*.csv
+*.html
+!data/*.html
+!data/*.htm
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Logs
+*.log
+
+# OS
+Thumbs.db
+.DS_Store

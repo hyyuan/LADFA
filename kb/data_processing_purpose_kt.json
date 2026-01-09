@@ -1,0 +1,54 @@
+{
+  "DataProcessingPurpose": [
+    {
+      "name": "Basic service or feature",
+      "description": "Provide a service such as customer support, payment service, communication, account management, purchasing, that the user explicitly requests and that is part of the website or app or company or organisation's basic service or functionality.",
+      "items": ["customer support", "customer service", "payment service", "communication", "creating account", "contact information", "purchase order", "purchase service", "purchase product"]
+    },
+    {
+      "name": "Additional service or feature",
+      "description": "Provide a service that the user explicitly requests but that is not a necessary part of the website or app or company or organisation's basic service. Additional services/features may enhance user experience or add convenience but require additional data.",
+      "items": ["comments", "blog participation", "a store finder that needs location information"]
+    },
+    {
+      "name": "Social media integration",
+      "description": "Provide a service that incorporate social media platforms and features into a website or company's operations, enhancing user engagement, brand visibility, and customer interaction. It bridges the website or company's digital presence with popular social media channels, creating a seamless interaction between the two."
+    },
+    {
+      "name": "Advertising",
+      "description": "To show ads that are either targeted to the specific user or not targeted, or other general advertising activities"
+    },
+    {
+      "name": "Marketing",
+      "description": "To contact the user to offer products, services, or other promotions (e.g., send marketing emails, calling or texting user with marketing messages). Marketing typically requires the use of contact information."
+    },
+    {
+      "name": "Analytics or Research",
+      "description": "For understanding the website or app or company or organisation's audience, improving the website/app, improving the quality of products or services, inform company strategy, or general research."
+    },
+    {
+      "name": "Personalization or Customization",
+      "description": "For providing user with a personalized experience, e.g., by allowing to arrange how the website/app looks, based on the user’s preferences or language, etc."
+    },
+    {
+      "name": "Operational Integrity and Security",
+      "description": "For ensuring the proper functioning and security of the website or app, including enforcing terms of service, preventing fraud, safeguarding user data, protecting company assets, and maintaining a safe and trustworthy digital environment, etc."
+    },
+    {
+      "name": "Legal requirement",
+      "description": "For compliance with legal obligations, e.g., regulations, government data requests, government retention requests, law enforcement requests in general, etc."
+    },
+    {
+      "name": "Merger/Acquisition",
+      "description": "If company/organization merges or is acquired it transfers users' information to another company/organization."
+    },
+    {
+      "name": "Other",
+      "description": "Other specific purpose not covered above."
+    },
+    {
+      "name": "Unspecified",
+      "description": "The purpose is not explicitly stated or is unclear."
+    }
+  ]
+  }

@@ -1,0 +1,68 @@
+{
+  "_comment": "Configuration template for Privacy Policy Analysis Framework",
+  
+  "api": {
+    "groq_api_key_file": "GROQ_API_KEY",
+    "default_model": "llama-3.3-70b-versatile",
+    "rate_limit_delay": 5,
+    "description": "API configuration - adjust delays based on your quota"
+  },
+  
+  "directories": {
+    "input_data": "data/",
+    "knowledge_bases": "kb/",
+    "results": "results/",
+    "vector_indexes": [
+      "data_categories_index/",
+      "data_consumer_index/",
+      "data_processing_purpose_index/",
+      "data_processing_method_index/"
+    ],
+    "description": "Directory paths - keep consistent across analysis runs"
+  },
+  
+  "knowledge_bases": {
+    "data_categories": "kb/data_categories_kt.json",
+    "data_consumer_types": "kb/data_consumer_type_kt.json",
+    "data_processing_purposes": "kb/data_processing_purpose_kt.json",
+    "data_processing_methods": "kb/data_processing_method_kt.json",
+    "description": "Knowledge base file locations"
+  },
+  
+  "embeddings": {
+    "model": "BAAI/bge-small-en-v1.5",
+    "top_k_results": 3,
+    "description": "Embedding model and retrieval settings"
+  },
+  
+  "visualization": {
+    "default_centrality": "betweenness",
+    "top_n_nodes": 10,
+    "output_formats": ["csv", "html"],
+    "centrality_options": ["betweenness", "closeness", "degree"],
+    "description": "Visualization parameters for network analysis"
+  },
+  
+  "models": {
+    "data_flow_extraction": "llama-3.3-70b-versatile",
+    "data_type_categorization": "llama3-70b-8192",
+    "general_categorization": "llama-3.1-8b-instant",
+    "description": "LLM models for different tasks - adjust based on accuracy needs"
+  },
+  
+  "policies": [
+    {
+      "name": "example",
+      "file": "data/example_clean.html",
+      "main_party": "example_company",
+      "enabled": true
+    }
+  ],
+  
+  "advanced": {
+    "segment_context_window": 1,
+    "min_segment_length": 50,
+    "max_retries": 3,
+    "description": "Advanced settings - modify only if you understand the pipeline"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "DataConsumerType": [
+    {
+      "name": "First Party",
+      "description": "A first party is the entity, such as a website or company, that directly collects and uses personal/vehicle data from individuals/customers. The company/website/application/service's actual name would be often used as indication of existance of the first party",
+      "items": ["we", "us", "this website", "this company", "this organisation", "from you", "our website", "our company", "our organisation",
+      "our service"]
+    },
+    {
+      "name": "Third Party",
+      "description": "A third party is the entity (company/organisation) other than the first party company/organisation, that directly/indirectly collects and use personal/vehicle data from individuals/customers",
+      "items": ["regulator","law enforcement","agency","government","government body","government authority","service provider","service company",
+        "tax body","business partner", "third party service provider", "social media company", "subsidiaries", "children company", "parent company", "affiliate", "child company", "insurance company",
+        "service centre", "repair centre", "financial institution", "institution", "data processor", "payment processor"]
+    },
+    {
+      "name": "Unspecified",
+      "description": "It is not specified or unclear who collects the data."
+    }
+  ]
+  }
