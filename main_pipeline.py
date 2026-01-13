@@ -76,7 +76,7 @@ def llm_pipeline(input_file):
             write_row([str(i), processed_segments[i]], 2)
 
     # Step 2: Initialize output CSV for results
-    results_output = file_name + '_completed_revised_new.csv'
+    results_output = file_name + '_output.csv'
     with open(results_output, mode='w', newline='', encoding="utf-8") as file:
 
         writer = csv.writer(file)

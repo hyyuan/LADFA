@@ -53,14 +53,14 @@ def run(name, main_party):
     )
     
     # Output files for simple post-processing (multiple metrics)
-    between_csv = 'results/' + name + '_between_v2.csv'
-    close_csv = 'results/' + name + '_close_v2.csv'
-    central_csv = 'results/' + name + '_central_v2.csv'
-    tree_csv = 'results/' + name + '_tree_v2.csv'
-    longest_path_csv = 'results/' + name + '_longest_path_v2.csv'
-    longest_path_length_csv = 'results/' + name + '_longest_path_length_v2.csv'
-    most_inwards_csv = 'results/' + name + '_most_inwards_v2.csv'
-    most_outwards_csv = 'results/' + name + '_most_outwards_v2.csv'
+    between_csv = 'results/' + name + '_between.csv'
+    close_csv = 'results/' + name + '_close.csv'
+    central_csv = 'results/' + name + '_central.csv'
+    tree_csv = 'results/' + name + '_tree.csv'
+    longest_path_csv = 'results/' + name + '_longest_path.csv'
+    longest_path_length_csv = 'results/' + name + '_longest_path_length.csv'
+    most_inwards_csv = 'results/' + name + '_most_inwards.csv'
+    most_outwards_csv = 'results/' + name + '_most_outwards.csv'
     
     # Run simple post-processing with various network metrics
     processor.post_processing_simple(

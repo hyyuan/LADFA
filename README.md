@@ -156,63 +156,28 @@ See [`example_usage.py`](example_usage.py) for batch processing examples.
 
 - **[`GETTING_STARTED.md`](GETTING_STARTED.md)** - Complete setup and installation guide
 - **[`QUICK_REFERENCE.md`](QUICK_REFERENCE.md)** - Quick command reference
-- **[`CLEANUP_SUMMARY.md`](CLEANUP_SUMMARY.md)** - Code cleanup documentation
 - **[`example_usage.py`](example_usage.py)** - Interactive examples and tutorials
 - **[`config.template.json`](config.template.json)** - Configuration reference
 
-## 📝 Key Improvements from Original Framework
-
-1. **Removed Unused Scripts**
-   - `groq_json.py` - Standalone example, not used
-   - `html2text_v1.py` - Deprecated version
-   - `limithandler.py` - Not imported anywhere
-   - `network.py` - Standalone examples only
-   - `performance_matrics.py` - Had broken imports
-
-2. **Added Comprehensive Documentation**
-   - Module-level docstrings explaining purpose
-   - Function docstrings with parameter descriptions
-   - Inline comments for complex logic
-   - Type hints where applicable
-
-3. **Fixed Import Issues**
-   - Changed `gatekeeper` to `groq_client` in main_pipeline.py
-   - Updated all imports to use `cleaned_framework` namespace
-
-4. **Improved Code Organization**
-   - Consistent naming conventions
-   - Clear separation of concerns
-   - Better function organization
-
-## 🔍 Code Quality
-
-All scripts have been:
-- ✅ Reviewed for unused code
-- ✅ Documented with clear comments
-- ✅ Checked for import correctness
-- ✅ Validated for structural integrity
-- ✅ Tested for dependency conflicts
-
-## 📊 Output Files
 
 The pipeline generates several types of outputs:
 
 ### From main_pipeline.py
 - `*_segment.csv` - Text segments extracted from input
-- `*_completed_revised_new.csv` - Complete analysis results
+- `*_output.csv` - Complete analysis results
 
 ### From main_pipeline_visualisation.py
-- `*_verification_v2.csv` - Verification samples
-- `*_metrics_new_v2.csv` - Network metrics
-- `*_basics_new_v2.csv` - Basic statistics
-- `*_between_v2.csv` - Betweenness centrality
-- `*_close_v2.csv` - Closeness centrality
-- `*_central_v2.csv` - Degree centrality
-- `*_tree_v2.csv` - Tree structures
-- `*_longest_path_v2.csv` - Longest paths
+- `*_verification.csv` - Verification samples
+- `*_metrics.csv` - Network metrics
+- `*_basics.csv` - Basic statistics
+- `*_between.csv` - Betweenness centrality
+- `*_close.csv` - Closeness centrality
+- `*_central.csv` - Degree centrality
+- `*_tree.csv` - Tree structures
+- `*_longest_path.csv` - Longest paths
 - Interactive HTML graph visualizations
 
-## 🛠️ Maintenance Notes
+## 🛠️ Important Notes
 
 - The framework uses rate limiting (sleep delays) to respect API limits
 - Vector indexes are cached in directories to avoid recomputation
