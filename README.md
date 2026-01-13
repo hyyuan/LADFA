@@ -1,4 +1,4 @@
-# Cleaned Framework - Privacy Policy Analysis
+# LADFA: A Framework using (L)LMs and R(A)G for Personal (D)ata (F)low (A)nalysis in Privacy Policies
 
 This folder contains the cleaned and documented version of the privacy policy analysis framework. All unused scripts have been removed, and remaining scripts have been thoroughly commented for better understanding and maintainability.
 

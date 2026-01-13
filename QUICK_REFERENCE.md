@@ -1,4 +1,6 @@
-# Quick Reference Guide - Cleaned Framework
+# LADFA: A Framework using (L)LMs and R(A)G for Personal (D)ata (F)low (A)nalysis in Privacy Policies
+
+# Quick Reference Guide 
 
 ## 🚀 Quick Start
 

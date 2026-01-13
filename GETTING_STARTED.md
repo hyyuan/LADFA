@@ -1,4 +1,4 @@
-# Getting Started Guide - Privacy Policy Analysis Framework
+# LADFA: A Framework using (L)LMs and R(A)G for Personal (D)ata (F)low (A)nalysis in Privacy Policies
 
 This guide will help you set up and run the privacy policy analysis framework for the first time.
 
