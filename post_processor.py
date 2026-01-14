@@ -407,7 +407,7 @@ def get_data_flow_graph_revised(input_file, main_party, csv_file):
     with open('kb/data_processing_purpose_kt.json', 'r') as file:
         _data = json.load(file)
         purposes = []
-        purpose_data = _data['DataTypes']
+        purpose_data = _data['Root']
         for item in purpose_data:
             purposes.append(item['name'])
 

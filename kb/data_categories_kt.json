@@ -1,5 +1,5 @@
 {
-  "DataCategory": [
+  "Root": [
     {
       "name": "Finance",
       "description": "Financial data, such as credit/debit card data, other payment information, credit scores, etc.",
@@ -93,15 +93,18 @@
     },
     {
       "name": "Survey data",
-      "description": "Any data that is collected through surveys."
+      "description": "Any data that is collected through surveys.",
+      "items": []
     },
     {
       "name": "Other",
-      "description": "A specific type of information not covered by the above categories."
+      "description": "A specific type of information not covered by the above categories.",
+      "items": []
     },
     {
       "name": "Unspecified",
-      "description": "The type of information is not explicitly stated or unclear (e.g., refers to 'information' very generically)."
+      "description": "The type of information is not explicitly stated or unclear (e.g., refers to 'information' very generically).",
+      "items": []
     }
   ]
 }

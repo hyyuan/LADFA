@@ -28,8 +28,8 @@ def run(name, main_party):
         main_party (str): Main party name (usually same as name, lowercase)
     """
     # Define input and output file paths
-    input_file = 'results/' + name + '_clean_completed_revised_v2.csv'
-    csv_file = 'results/' + name + '_clean_segment_v2.csv'
+    input_file = 'results/' + name + '_output.csv'
+    csv_file = 'results/' + name + '_segment.csv'
     
     # Configuration for network analysis
     option = 'betweenness'  # Centrality measure to use
@@ -82,13 +82,3 @@ def run(name, main_party):
 if __name__ == "__main__":
     # Batch process multiple privacy policies
     run('renault', 'renault')
-    run('audi', 'audi')
-    run('honda', 'honda')
-    run('ford', 'ford')
-    run('hyundai', 'hyundai')
-    run('kia', 'kia')
-    run('lexus', 'lexus')
-    run('nissan', 'nissan')
-    run('polestar', 'polestar')
-    run('tesla', 'tesla')
-    run('vauxhall', 'vauxhall')

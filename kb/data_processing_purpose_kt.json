@@ -1,5 +1,5 @@
 {
-  "DataProcessingPurpose": [
+  "Root": [
     {
       "name": "Basic service or feature",
       "description": "Provide a service such as customer support, payment service, communication, account management, purchasing, that the user explicitly requests and that is part of the website or app or company or organisation's basic service or functionality.",
@@ -12,43 +12,52 @@
     },
     {
       "name": "Social media integration",
-      "description": "Provide a service that incorporate social media platforms and features into a website or company's operations, enhancing user engagement, brand visibility, and customer interaction. It bridges the website or company's digital presence with popular social media channels, creating a seamless interaction between the two."
-    },
+      "description": "Provide a service that incorporate social media platforms and features into a website or company's operations, enhancing user engagement, brand visibility, and customer interaction. It bridges the website or company's digital presence with popular social media channels, creating a seamless interaction between the two.",
+      "items": []},
     {
       "name": "Advertising",
-      "description": "To show ads that are either targeted to the specific user or not targeted, or other general advertising activities"
+      "description": "To show ads that are either targeted to the specific user or not targeted, or other general advertising activities",
+      "items": []
     },
     {
       "name": "Marketing",
-      "description": "To contact the user to offer products, services, or other promotions (e.g., send marketing emails, calling or texting user with marketing messages). Marketing typically requires the use of contact information."
+      "description": "To contact the user to offer products, services, or other promotions (e.g., send marketing emails, calling or texting user with marketing messages). Marketing typically requires the use of contact information.",
+      "items": []
     },
     {
       "name": "Analytics or Research",
-      "description": "For understanding the website or app or company or organisation's audience, improving the website/app, improving the quality of products or services, inform company strategy, or general research."
+      "description": "For understanding the website or app or company or organisation's audience, improving the website/app, improving the quality of products or services, inform company strategy, or general research.",
+      "items": []
     },
     {
       "name": "Personalization or Customization",
-      "description": "For providing user with a personalized experience, e.g., by allowing to arrange how the website/app looks, based on the user’s preferences or language, etc."
+      "description": "For providing user with a personalized experience, e.g., by allowing to arrange how the website/app looks, based on the user’s preferences or language, etc.",
+      "items": []
     },
     {
       "name": "Operational Integrity and Security",
-      "description": "For ensuring the proper functioning and security of the website or app, including enforcing terms of service, preventing fraud, safeguarding user data, protecting company assets, and maintaining a safe and trustworthy digital environment, etc."
+      "description": "For ensuring the proper functioning and security of the website or app, including enforcing terms of service, preventing fraud, safeguarding user data, protecting company assets, and maintaining a safe and trustworthy digital environment, etc.",
+      "items": []
     },
     {
       "name": "Legal requirement",
-      "description": "For compliance with legal obligations, e.g., regulations, government data requests, government retention requests, law enforcement requests in general, etc."
+      "description": "For compliance with legal obligations, e.g., regulations, government data requests, government retention requests, law enforcement requests in general, etc.",
+      "items": []
     },
     {
       "name": "Merger/Acquisition",
-      "description": "If company/organization merges or is acquired it transfers users' information to another company/organization."
+      "description": "If company/organization merges or is acquired it transfers users' information to another company/organization.",
+      "items": []
     },
     {
       "name": "Other",
-      "description": "Other specific purpose not covered above."
+      "description": "Other specific purpose not covered above.",
+      "items": []
     },
     {
       "name": "Unspecified",
-      "description": "The purpose is not explicitly stated or is unclear."
+      "description": "The purpose is not explicitly stated or is unclear.",
+      "items": []
     }
   ]
   }

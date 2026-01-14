@@ -35,7 +35,7 @@ def convert_json(json_file_path):
             text=doc['description'] + ' ' + ', '.join(doc.get('items', [])), 
             metadata={'name': doc['name']}
         ) 
-        for doc in json_data['DataTypes']
+        for doc in json_data['Root']
     ]
     return documents
 
@@ -127,7 +127,7 @@ def json_to_dict(json_file_path):
     transformed_data = {}
 
     # Iterate through DataTypes and map each item to its category name
-    for data_type in data["DataTypes"]:
+    for data_type in data["Root"]:
         name = data_type["name"]  # Category name
         items = data_type["items"]  # List of items in this category
 

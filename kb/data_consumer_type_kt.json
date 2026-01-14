@@ -1,5 +1,5 @@
 {
-  "DataConsumerType": [
+  "Root": [
     {
       "name": "First Party",
       "description": "A first party is the entity, such as a website or company, that directly collects and uses personal/vehicle data from individuals/customers. The company/website/application/service's actual name would be often used as indication of existance of the first party",
@@ -15,7 +15,8 @@
     },
     {
       "name": "Unspecified",
-      "description": "It is not specified or unclear who collects the data."
+      "description": "It is not specified or unclear who collects the data.",
+      "items": []
     }
   ]
   }

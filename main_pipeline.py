@@ -57,6 +57,13 @@ def llm_pipeline(input_file):
 
     # Determine file type and set up output paths
     file_name, file_extension = os.path.splitext(input_file)
+    
+    # Create results directory if it doesn't exist
+    results_dir = 'results'
+    os.makedirs(results_dir, exist_ok=True)
+    
+    # Extract base filename for output files
+    base_name = os.path.basename(file_name)
 
     # Step 1: Process HTML/PDF and convert to text segmentation
     processed_segments = []
@@ -65,7 +72,7 @@ def llm_pipeline(input_file):
     elif file_extension == '.pdf':
         processed_segments = pdfreader.split_pdf(input_file)
 
-    segment_output = file_name + '_segment.csv'
+    segment_output = os.path.join(results_dir, base_name + '_segment.csv')
 
     # Write text segments to CSV for reference
     with open(segment_output, mode="w", newline="", encoding="utf-8") as file:
@@ -76,7 +83,7 @@ def llm_pipeline(input_file):
             write_row([str(i), processed_segments[i]], 2)
 
     # Step 2: Initialize output CSV for results
-    results_output = file_name + '_output.csv'
+    results_output = os.path.join(results_dir, base_name + '_output.csv')
     with open(results_output, mode='w', newline='', encoding="utf-8") as file:
 
         writer = csv.writer(file)
@@ -150,7 +157,16 @@ def llm_pipeline(input_file):
 
                 # Process only if data flows were found
                 if data_flow_json != 'NO':
-                    data_flows = json.loads(data_flow_json)
+                    try:
+                        # Handle case where LLM wraps array in braces: {[...]}
+                        cleaned_json = data_flow_json.strip()
+                        if cleaned_json.startswith('{[') and cleaned_json.endswith(']}'):
+                            cleaned_json = cleaned_json[1:-1]  # Remove outer { }
+                        data_flows = json.loads(cleaned_json)
+                    except json.JSONDecodeError as e:
+                        print(f"JSON decode error at segment {idx}: {e}")
+                        print(f"LLM Response: {data_flow_json[:500]}")  # Print first 500 chars
+                        continue  # Skip this segment
 
                     # Convert data flows to standardized format
                     data_flow_array = []
@@ -284,5 +300,5 @@ def llm_pipeline(input_file):
 
 if __name__ == "__main__":
     # Example usage - process a privacy policy file
-    input_file = 'data/vauxhall_clean.html'
+    input_file = 'data/kia.html'
     llm_pipeline(input_file)

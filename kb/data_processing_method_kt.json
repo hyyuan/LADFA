@@ -1,16 +1,19 @@
 {
-  "DataProcessingMethod": [
+  "Root": [
     {
       "name": "Active",
-      "description": " a company or organization gathers information that a user knowingly and intentionally provides. This involves instances where users actively input data, such as filling out a web form, creating an account, making a purchase, or subscribing to a newsletter. Explicit data collection typically requires the user to be fully aware of the information being provided and often involves their direct consent."
+      "description": " a company or organization gathers information that a user knowingly and intentionally provides. This involves instances where users actively input data, such as filling out a web form, creating an account, making a purchase, or subscribing to a newsletter. Explicit data collection typically requires the user to be fully aware of the information being provided and often involves their direct consent.",
+      "items": []
     },
     {
       "name": "Passive",
-      "description": "refers to the process by which a company or organization gathers information passively, without the user actively providing it. This type of data collection occurs automatically in the background, often as a byproduct of the user's interaction with a website, app, or service. Examples include tracking user activity through cookies, logging IP addresses, collecting device information, or recording browsing behavior and preferences."
+      "description": "refers to the process by which a company or organization gathers information passively, without the user actively providing it. This type of data collection occurs automatically in the background, often as a byproduct of the user's interaction with a website, app, or service. Examples include tracking user activity through cookies, logging IP addresses, collecting device information, or recording browsing behavior and preferences.",
+      "items": []
     },
     {
       "name": "Unspecified",
-      "description": "It is not specified or unclear whether the information is collected explicitly or implicitly."
+      "description": "It is not specified or unclear whether the information is collected explicitly or implicitly.",
+      "items": []
     }
   ]
   }
