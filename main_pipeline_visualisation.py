@@ -12,7 +12,7 @@ For each privacy policy, it generates:
 - In/out-degree analysis
 """
 
-import cleaned_framework.post_processor as processor
+import post_processor as processor
 
 
 def run(name, main_party):

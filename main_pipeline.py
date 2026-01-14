@@ -15,11 +15,11 @@ import time
 import csv
 import json
 import os
-import cleaned_framework.html2text as h2t
-import cleaned_framework.groq_client as groq_client
-import cleaned_framework.rag as rag
-import cleaned_framework.agent_llm as agent
-import cleaned_framework.pdf2text as pdfreader
+import html2text as h2t
+import groq_client as groq_client
+import rag as rag
+import agent_llm as agent
+import pdf2text as pdfreader
 
 
 def llm_pipeline(input_file):
