@@ -20,7 +20,7 @@ import json
 try:
     import prompts_config as prompts
 except ImportError:
-    import cleaned_framework.prompts_config as prompts
+    import prompts_config as prompts
 
 
 class DataFlow(BaseModel):

@@ -225,7 +225,7 @@ def llm_pipeline(input_file):
                                     text_segment, 
                                     output, 
                                     client,
-                                    modelID='llama3-70b-8192'
+                                    modelID='llama-3.3-70b-versatile'
                                 )
                                 data_category_dict[data_type] = llm_reply
                                 time.sleep(5)
