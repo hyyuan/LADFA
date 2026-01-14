@@ -97,8 +97,6 @@ Interactive HTML Visualizations
 echo "your_actual_api_key_here" > GROQ_API_KEY
 ```
 
-**Note**: The `GROQ_API_KEY` file is already in `.gitignore` and will never be committed to the repository. A template file (`GROQ_API_KEY.template`) is provided for reference.
-
 ## 📦 Dependencies
 
 See [`requirements.txt`](requirements.txt) for complete list.
@@ -201,7 +199,6 @@ The pipeline generates several types of outputs:
 - The framework uses rate limiting (sleep delays) to respect API limits
 - Vector indexes are cached in directories to avoid recomputation
 - spaCy model must be downloaded: `python -m spacy download en_core_web_sm`
-- Your `GROQ_API_KEY` file is automatically ignored by git and will never be committed
 
 ## 📧 Support
 
