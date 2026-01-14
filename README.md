@@ -84,6 +84,21 @@ Network Analysis
 Interactive HTML Visualizations
 ```
 
+## 🔑 API Key Setup
+
+**Before running the framework**, you must configure your Groq API key:
+
+1. Get your API key from [Groq Console](https://console.groq.com/keys)
+2. Create a file named `GROQ_API_KEY` in this directory
+3. Paste your API key into the file (just the key, no quotes or extra text)
+
+```bash
+# Create the API key file
+echo "your_actual_api_key_here" > GROQ_API_KEY
+```
+
+**Note**: The `GROQ_API_KEY` file is already in `.gitignore` and will never be committed to the repository. A template file (`GROQ_API_KEY.template`) is provided for reference.
+
 ## 📦 Dependencies
 
 See [`requirements.txt`](requirements.txt) for complete list.
@@ -111,8 +126,11 @@ The scripts expect the following knowledge typologies files in `kb/`:
 - `data_processing_method_kt.json` - Data processing methods
 
 ### External Resources
-- Groq API key (stored in `GROQ_API_KEY` file in parent directory)
-- spaCy model: `en_core_web_sm`
+- **Groq API key** - Required for LLM operations
+  - Create `GROQ_API_KEY` file in this directory with your key
+  - Get your key from [Groq Console](https://console.groq.com/keys)
+  - See [API Key Setup](#-api-key-setup) section above
+- **spaCy model**: `en_core_web_sm` (install with `python -m spacy download en_core_web_sm`)
 
 ## 🚀 Usage
 
@@ -179,10 +197,11 @@ The pipeline generates several types of outputs:
 
 ## 🛠️ Important Notes
 
+- **API Key Required**: You must create a `GROQ_API_KEY` file with your API key before running the framework
 - The framework uses rate limiting (sleep delays) to respect API limits
 - Vector indexes are cached in directories to avoid recomputation
 - spaCy model must be downloaded: `python -m spacy download en_core_web_sm`
-- Groq API key must be stored in the parent directory
+- Your `GROQ_API_KEY` file is automatically ignored by git and will never be committed
 
 ## 📧 Support
 
