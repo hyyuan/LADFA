@@ -1,0 +1,7 @@
+# Exclude data files from language statistics
+data/*.html linguist-documentation
+data/*.htm linguist-documentation
+data/*.pdf linguist-documentation
+
+# Mark test/sample data as vendored (excluded from stats)
+data/* linguist-vendored
