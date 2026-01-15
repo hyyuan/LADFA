@@ -81,4 +81,4 @@ def run(name, main_party):
 
 if __name__ == "__main__":
     # Batch process multiple privacy policies
-    run('renault', 'renault')
+    run('kia', 'kia')

@@ -354,9 +354,9 @@ def get_abbreviation(text, abbreviation_dict):
             sub_string_1 = text[0:pos_1 - 1]
             sub_string_2 = text[pos_2 + 1:]
 
-            print(sub_string_1)
+            #print(sub_string_1)
             sub_string_1_arr = sub_string_1.split()
-            print(sub_string_1_arr)
+            #print(sub_string_1_arr)
             if len(sub_string_1_arr) > 0:
                 sub_string_1_abbreviation = sub_string_1_arr[len(sub_string_1_arr)-1]
                 if abbreviation == sub_string_1_abbreviation:
@@ -574,7 +574,7 @@ def get_data_flow_graph_simple(input_file, main_party, csv_file):
         next(csvreader)  # Skip header row if it exists
 
         for line_num, row in enumerate(csvreader, 2):
-            print("row ", row)
+            #print("row ", row)
             data_output = []
             raw_idx = row[0]
             raw_text = text_dictrionary[raw_idx]
