@@ -1,6 +1,10 @@
 # LADFA: A Framework using (L)LMs and R(A)G for Personal (D)ata (F)low (A)nalysis in Privacy Policies
 
+[![Paper](https://img.shields.io/badge/arXiv-2601.10413-b31b1b.svg)](https://arxiv.org/abs/2601.10413)
+
 An automated framework for analyzing privacy policies using Large Language Models (LLMs) and Retrieval Augmented Generation (RAG). This system extracts data flows from privacy policies, categorizes data types, identifies collection parties, and analyzes purposes and methods of data processing.
+
+**Paper**: [LADFA: A Framework using (L)LMs and R(A)G for Personal (D)ata (F)low (A)nalysis in Privacy Policies](https://arxiv.org/abs/2601.10413)
 
 ## 📋 Table of Contents
 1. [Prerequisites](#-prerequisites)
@@ -11,6 +15,7 @@ An automated framework for analyzing privacy policies using Large Language Model
 6. [Workflow](#-workflow)
 7. [Output Files](#-output-files)
 8. [Troubleshooting](#-troubleshooting)
+9. [Citation](#-citation)
 
 ## ✅ Prerequisites
 
@@ -227,3 +232,19 @@ See [`requirements.txt`](requirements.txt) for complete list.
 ## 🛠️ Advanced Usage
 
 For advanced configuration options including batch processing, custom LLM models, prompt customization, and RAG parameter tuning, see [ADVANCED_USAGE.md](ADVANCED_USAGE.md).
+
+## 📄 Citation
+
+If you use LADFA in your research, please cite our paper:
+
+```bibtex
+@misc{yuan2026,
+      title={LADFA: A Framework of Using Large Language Models and Retrieval-Augmented Generation for Personal Data Flow Analysis in Privacy Policies}, 
+      author={Haiyue Yuan and Nikolay Matyunin and Ali Raza and Shujun Li},
+      year={2026},
+      eprint={2601.10413},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2601.10413}, 
+}
+```
