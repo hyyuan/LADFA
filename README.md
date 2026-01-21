@@ -4,7 +4,7 @@
 
 An automated framework for analyzing privacy policies using Large Language Models (LLMs) and Retrieval Augmented Generation (RAG). This system extracts data flows from privacy policies, categorizes data types, identifies collection parties, and analyzes purposes and methods of data processing.
 
-**Paper**: [LADFA: A Framework using (L)LMs and R(A)G for Personal (D)ata (F)low (A)nalysis in Privacy Policies](https://arxiv.org/abs/2601.10413)
+**Paper**: [LADFA: A Framework of Using Large Language Models and Retrieval-Augmented Generation for Personal Data Flow Analysis in Privacy Policies](https://arxiv.org/abs/2601.10413)
 
 ## 📋 Table of Contents
 1. [Prerequisites](#-prerequisites)
