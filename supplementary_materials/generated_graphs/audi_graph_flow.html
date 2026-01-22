@@ -1,0 +1,677 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script>function neighbourhoodHighlight(params) {
+  // console.log("in nieghbourhoodhighlight");
+  allNodes = nodes.get({ returnType: "Object" });
+  // originalNodes = JSON.parse(JSON.stringify(allNodes));
+  // if something is selected:
+  if (params.nodes.length > 0) {
+    highlightActive = true;
+    var i, j;
+    var selectedNode = params.nodes[0];
+    var degrees = 2;
+
+    // mark all nodes as hard to read.
+    for (let nodeId in allNodes) {
+      // nodeColors[nodeId] = allNodes[nodeId].color;
+      allNodes[nodeId].color = "rgba(200,200,200,0.5)";
+      if (allNodes[nodeId].hiddenLabel === undefined) {
+        allNodes[nodeId].hiddenLabel = allNodes[nodeId].label;
+        allNodes[nodeId].label = undefined;
+      }
+    }
+    var connectedNodes = network.getConnectedNodes(selectedNode);
+    var allConnectedNodes = [];
+
+    // get the second degree nodes
+    for (i = 1; i < degrees; i++) {
+      for (j = 0; j < connectedNodes.length; j++) {
+        allConnectedNodes = allConnectedNodes.concat(
+          network.getConnectedNodes(connectedNodes[j])
+        );
+      }
+    }
+
+    // all second degree nodes get a different color and their label back
+    for (i = 0; i < allConnectedNodes.length; i++) {
+      // allNodes[allConnectedNodes[i]].color = "pink";
+      allNodes[allConnectedNodes[i]].color = "rgba(150,150,150,0.75)";
+      if (allNodes[allConnectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[allConnectedNodes[i]].label =
+          allNodes[allConnectedNodes[i]].hiddenLabel;
+        allNodes[allConnectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // all first degree nodes get their own color and their label back
+    for (i = 0; i < connectedNodes.length; i++) {
+      // allNodes[connectedNodes[i]].color = undefined;
+      allNodes[connectedNodes[i]].color = nodeColors[connectedNodes[i]];
+      if (allNodes[connectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[connectedNodes[i]].label =
+          allNodes[connectedNodes[i]].hiddenLabel;
+        allNodes[connectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // the main node gets its own color and its label back.
+    // allNodes[selectedNode].color = undefined;
+    allNodes[selectedNode].color = nodeColors[selectedNode];
+    if (allNodes[selectedNode].hiddenLabel !== undefined) {
+      allNodes[selectedNode].label = allNodes[selectedNode].hiddenLabel;
+      allNodes[selectedNode].hiddenLabel = undefined;
+    }
+  } else if (highlightActive === true) {
+    // console.log("highlightActive was true");
+    // reset all nodes
+    for (let nodeId in allNodes) {
+      // allNodes[nodeId].color = "purple";
+      allNodes[nodeId].color = nodeColors[nodeId];
+      // delete allNodes[nodeId].color;
+      if (allNodes[nodeId].hiddenLabel !== undefined) {
+        allNodes[nodeId].label = allNodes[nodeId].hiddenLabel;
+        allNodes[nodeId].hiddenLabel = undefined;
+      }
+    }
+    highlightActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  if (params.nodes.length > 0) {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        // console.log(allNodes[nodeId]);
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  } else {
+    // console.log("Nothing was selected");
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        // console.log(allNodes[nodeId]);
+        // allNodes[nodeId].color = {};
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  }
+}
+
+function filterHighlight(params) {
+  allNodes = nodes.get({ returnType: "Object" });
+  // if something is selected:
+  if (params.nodes.length > 0) {
+    filterActive = true;
+    let selectedNodes = params.nodes;
+
+    // hiding all nodes and saving the label
+    for (let nodeId in allNodes) {
+      allNodes[nodeId].hidden = true;
+      if (allNodes[nodeId].savedLabel === undefined) {
+        allNodes[nodeId].savedLabel = allNodes[nodeId].label;
+        allNodes[nodeId].label = undefined;
+      }
+    }
+
+    for (let i=0; i < selectedNodes.length; i++) {
+      allNodes[selectedNodes[i]].hidden = false;
+      if (allNodes[selectedNodes[i]].savedLabel !== undefined) {
+        allNodes[selectedNodes[i]].label = allNodes[selectedNodes[i]].savedLabel;
+        allNodes[selectedNodes[i]].savedLabel = undefined;
+      }
+    }
+
+  } else if (filterActive === true) {
+    // reset all nodes
+    for (let nodeId in allNodes) {
+      allNodes[nodeId].hidden = false;
+      if (allNodes[nodeId].savedLabel !== undefined) {
+        allNodes[nodeId].label = allNodes[nodeId].savedLabel;
+        allNodes[nodeId].savedLabel = undefined;
+      }
+    }
+    filterActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  if (params.nodes.length > 0) {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  } else {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  }
+}
+
+function selectNode(nodes) {
+  network.selectNodes(nodes);
+  neighbourhoodHighlight({ nodes: nodes });
+  return nodes;
+}
+
+function selectNodes(nodes) {
+  network.selectNodes(nodes);
+  filterHighlight({nodes: nodes});
+  return nodes;
+}
+
+function highlightFilter(filter) {
+  let selectedNodes = []
+  let selectedProp = filter['property']
+  if (filter['item'] === 'node') {
+    let allNodes = nodes.get({ returnType: "Object" });
+    for (let nodeId in allNodes) {
+      if (allNodes[nodeId][selectedProp] && filter['value'].includes((allNodes[nodeId][selectedProp]).toString())) {
+        selectedNodes.push(nodeId)
+      }
+    }
+  }
+  else if (filter['item'] === 'edge'){
+    let allEdges = edges.get({returnType: 'object'});
+    // check if the selected property exists for selected edge and select the nodes connected to the edge
+    for (let edge in allEdges) {
+      if (allEdges[edge][selectedProp] && filter['value'].includes((allEdges[edge][selectedProp]).toString())) {
+        selectedNodes.push(allEdges[edge]['from'])
+        selectedNodes.push(allEdges[edge]['to'])
+      }
+    }
+  }
+  selectNodes(selectedNodes)
+}</script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+            
+            
+            
+            
+            
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.0.0-rc.4/css/tom-select.min.css" integrity="sha512-43fHB3GLgZfz8QXl1RPQ8O66oIgv3po9cJ5erMt1c4QISq9dYb195T3vr5ImnJPXuVroKcGBPXBFKETW8jrPNQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.0.0-rc.4/js/tom-select.complete.js" integrity="sha512-jeF9CfnvzDiw9G9xiksVjxR2lib44Gnovvkv+3CgCG6NXCD4gqlA5nDAVW5WjpA+i+/zKsUWV5xNEbW1X/HH0Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 700px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+             #config {
+                 float: left;
+                 width: 400px;
+                 height: 600px;
+             }
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+                <div id="select-menu" class="card-header">
+                    <div class="row no-gutters">
+                        <div class="col-10 pb-2">
+                            <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="selectNode([value]);"
+                            id="select-node"
+                            placeholder="Select node..."
+                            >
+                                <option selected>Select a Node by ID</option>
+                                
+                                    <option value="you">you</option>
+                                
+                                    <option value="personal data">personal data</option>
+                                
+                                    <option value="information about cyber security vulnerabilities/incident or hacker attack">information about cyber security vulnerabilities/incident or hacker attack</option>
+                                
+                                    <option value="contact detail">contact detail</option>
+                                
+                                    <option value="audi ag">audi ag</option>
+                                
+                                    <option value="audi">audi</option>
+                                
+                                    <option value="chatbot">chatbot</option>
+                                
+                                    <option value="we">we</option>
+                                
+                                    <option value="processor">processor</option>
+                                
+                                    <option value="tracking service provider">tracking service provider</option>
+                                
+                                    <option value="web agency">web agency</option>
+                                
+                                    <option value="hosting provider">hosting provider</option>
+                                
+                                    <option value="it service provider">it service provider</option>
+                                
+                                    <option value="content delivery network provider">content delivery network provider</option>
+                                
+                                    <option value="customer support (audi interaction gmbh)">customer support (audi interaction gmbh)</option>
+                                
+                                    <option value="third party">third party</option>
+                                
+                                    <option value="processor in third country">processor in third country</option>
+                                
+                                    <option value="third country">third country</option>
+                                
+                                    <option value="internet browser">internet browser</option>
+                                
+                                    <option value="ip address">ip address</option>
+                                
+                                    <option value="internet address of  website">internet address of  website</option>
+                                
+                                    <option value="name of  service provider">name of  service provider</option>
+                                
+                                    <option value="name of  file or information accessed">name of  file or information accessed</option>
+                                
+                                    <option value="date and time as well as duration of  accessing">date and time as well as duration of  accessing</option>
+                                
+                                    <option value="data volume transferred">data volume transferred</option>
+                                
+                                    <option value="operating system and information about  internet browser used">operating system and information about  internet browser used</option>
+                                
+                                    <option value="http status code">http status code</option>
+                                
+                                    <option value="log file">log file</option>
+                                
+                                    <option value="content delivery network">content delivery network</option>
+                                
+                                    <option value="end device">end device</option>
+                                
+                                    <option value="url of  visited website">url of  visited website</option>
+                                
+                                    <option value="date and time of acces">date and time of acces</option>
+                                
+                                    <option value="user">user</option>
+                                
+                                    <option value="chat duration">chat duration</option>
+                                
+                                    <option value="timestamp of  message">timestamp of  message</option>
+                                
+                                    <option value="number of dialogue">number of dialogue</option>
+                                
+                                    <option value="approximate location">approximate location</option>
+                                
+                                    <option value="customer query">customer query</option>
+                                
+                                    <option value="us">us</option>
+                                
+                                    <option value="information">information</option>
+                                
+                                    <option value="vehicle identification number">vehicle identification number</option>
+                                
+                                    <option value="data">data</option>
+                                
+                                    <option value="or corporate brand of  vw group">or corporate brand of  vw group</option>
+                                
+                                    <option value="service provider">service provider</option>
+                                
+                                    <option value="supplier of hardware and software">supplier of hardware and software</option>
+                                
+                                    <option value=""></option>
+                                
+                                    <option value="your data">your data</option>
+                                
+                                    <option value="those entity that need your data in order to fulfil our contractual and legal obligation as well as to pursue legitimate interest">those entity that need your data in order to fulfil our contractual and legal obligation as well as to pursue legitimate interest</option>
+                                
+                                    <option value="it">it</option>
+                                
+                                    <option value="sale">sale</option>
+                                
+                                    <option value="nearest server">nearest server</option>
+                                
+                                    <option value="a server within  eu">a server within  eu</option>
+                                
+                            </select>
+                        </div>
+                        <div class="col-2 pb-2">
+                            <button type="button" class="btn btn-primary btn-block" onclick="neighbourhoodHighlight({nodes: []});">Reset Selection</button>
+                        </div>
+                    </div>
+                </div>
+            
+            
+              <div id="filter-menu" class="card-header">
+                <div class="row no-gutters">
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'item')"
+                            id="select-item"
+                        >
+                        <option value="">Select a network item</option>
+                        <option value="edge">edge</option>
+                        <option value="node">node</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'property')"
+                            id="select-property"
+                        >
+                        <option value="">Select a property...</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            id="select-value"
+                        >
+                        <option value="">Select value(s)...</option>
+                    </select>
+                  </div>
+                  <div class="col-1 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="highlightFilter(filter);">Filter</button>
+                  </div>
+                  <div class="col-2 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="clearFilter(true)">Reset Selection</button>
+                  </div>
+                </div>
+              </div>
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+            <div id="config"></div>
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+                  new TomSelect("#select-node",{
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      }
+                  });
+              
+
+              
+                  // explicitly using onItemAdd and this function as we need to save multiple values
+                  let updateValueFilter = function() {
+                      return function () {
+                      filter['value'].push(arguments[0])
+                      }
+                  }
+
+                  let valueControl = new TomSelect("#select-value",{
+                      maxItems: null,
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: updateValueFilter()
+                  });
+
+                  let addValues = function() {
+                      return function () {
+                          // clear the current value options and add the selected attribute values
+                          // tom-select handles duplicates
+                          let selectedProperty = arguments[0];
+                          valueControl.clear();
+                          valueControl.clearOptions();
+                          filter['value'] = []
+                          if (filter['item'] === 'node') {
+                              for (let each in allNodes) {
+                                  valueControl.addOption({
+                                      id:allNodes[each][selectedProperty],
+                                      title:allNodes[each][selectedProperty]
+                                  })
+                              }
+                          }
+                          else if (filter['item'] === 'edge') {
+                              for (let each in allEdges) {
+                                  valueControl.addOption({
+                                      id:allEdges[each][selectedProperty],
+                                      title:allEdges[each][selectedProperty]
+                                  })
+                              }
+                          }
+                      }
+                  };
+
+                  let propControl = new TomSelect("#select-property",{
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addValues()
+                  });
+
+                  let addProperties = function() {
+                      return function () {
+                          // loops through the selected network item and adds the attributes to dropdown
+                          // tom-select handles duplicates
+                          clearFilter(false)
+                          if (arguments[0] === 'edge') {
+                              for (let each in allEdges) {
+                                  if (allEdges.hasOwnProperty(each)) {
+                                      for (let eachProp in allEdges[each]) {
+                                          if (allEdges[each].hasOwnProperty(eachProp)) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                          else if (arguments[0] === 'node') {
+                              for (let each in allNodes) {
+                                  if (allNodes.hasOwnProperty(each)) {
+                                      for (let eachProp in allNodes[each]) {
+                                          if (allNodes[each].hasOwnProperty(eachProp)
+                                              && (eachProp !== 'hidden' && eachProp !== 'savedLabel'
+                                                  && eachProp !== 'hiddenLabel')) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  };
+
+                  let itemControl = new TomSelect("#select-item",{
+                      create: false,
+                      sortField:{
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addProperties()
+                  });
+
+                  function clearFilter(reset) {
+                      // utility function to clear all the selected filter options
+                      // if reset is set to true, the existing filter will be removed
+                      // else, only the dropdown options are cleared
+                      propControl.clear();
+                      propControl.clearOptions();
+                      valueControl.clear();
+                      valueControl.clearOptions();
+                      filter = {
+                          item : '',
+                          property : '',
+                          value : []
+                      }
+                      if (reset) {
+                          itemControl.clear();
+                          filterHighlight({nodes: []})
+                      }
+                  }
+
+                  function updateFilter(value, key) {
+                      // key could be 'item' or 'property' and value is as selected in dropdown
+                      filter[key] = value
+                  }
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#f7ff99", "id": "you", "label": "you", "shape": "dot", "size": 40, "title": "you"}, {"color": "#99ccff", "id": "personal data", "label": "personal data", "shape": "box", "size": 20, "title": "personal data"}, {"color": "#99ccff", "id": "information about cyber security vulnerabilities/incident or hacker attack", "label": "information about cyber security vulnerabilities/incident or hacker attack", "shape": "box", "size": 20, "title": "information about cyber security vulnerabilities/incident or hacker attack"}, {"color": "#99ccff", "id": "contact detail", "label": "contact detail", "shape": "box", "size": 20, "title": "contact detail"}, {"color": "#ccff99", "id": "audi ag", "label": "audi ag", "shape": "dot", "size": 40, "title": "audi ag"}, {"color": "#ccff99", "id": "audi", "label": "audi", "shape": "dot", "size": 40, "title": "audi"}, {"color": "#ff99ff", "id": "chatbot", "label": "chatbot", "shape": "dot", "size": 40, "title": "chatbot"}, {"color": "#ccff99", "id": "we", "label": "we", "shape": "dot", "size": 40, "title": "we"}, {"color": "#ff99ff", "id": "processor", "label": "processor", "shape": "dot", "size": 40, "title": "processor"}, {"color": "#ff99ff", "id": "tracking service provider", "label": "tracking service provider", "shape": "dot", "size": 40, "title": "tracking service provider"}, {"color": "#ff99ff", "id": "web agency", "label": "web agency", "shape": "dot", "size": 40, "title": "web agency"}, {"color": "#ff99ff", "id": "hosting provider", "label": "hosting provider", "shape": "dot", "size": 40, "title": "hosting provider"}, {"color": "#ff99ff", "id": "it service provider", "label": "it service provider", "shape": "dot", "size": 40, "title": "it service provider"}, {"color": "#ff99ff", "id": "content delivery network provider", "label": "content delivery network provider", "shape": "dot", "size": 40, "title": "content delivery network provider"}, {"color": "#ccff99", "id": "customer support (audi interaction gmbh)", "label": "customer support (audi interaction gmbh)", "shape": "dot", "size": 40, "title": "customer support (audi interaction gmbh)"}, {"color": "#ff99ff", "id": "third party", "label": "third party", "shape": "dot", "size": 40, "title": "third party"}, {"color": "#ff99ff", "id": "processor in third country", "label": "processor in third country", "shape": "dot", "size": 40, "title": "processor in third country"}, {"color": "#ff99ff", "id": "third country", "label": "third country", "shape": "dot", "size": 40, "title": "third country"}, {"color": "#ff99ff", "id": "internet browser", "label": "internet browser", "shape": "dot", "size": 40, "title": "internet browser"}, {"color": "#99ccff", "id": "ip address", "label": "ip address", "shape": "box", "size": 20, "title": "ip address"}, {"color": "#99ccff", "id": "internet address of  website", "label": "internet address of  website", "shape": "box", "size": 20, "title": "internet address of  website"}, {"color": "#99ccff", "id": "name of  service provider", "label": "name of  service provider", "shape": "box", "size": 20, "title": "name of  service provider"}, {"color": "#99ccff", "id": "name of  file or information accessed", "label": "name of  file or information accessed", "shape": "box", "size": 20, "title": "name of  file or information accessed"}, {"color": "#99ccff", "id": "date and time as well as duration of  accessing", "label": "date and time as well as duration of  accessing", "shape": "box", "size": 20, "title": "date and time as well as duration of  accessing"}, {"color": "#99ccff", "id": "data volume transferred", "label": "data volume transferred", "shape": "box", "size": 20, "title": "data volume transferred"}, {"color": "#99ccff", "id": "operating system and information about  internet browser used", "label": "operating system and information about  internet browser used", "shape": "box", "size": 20, "title": "operating system and information about  internet browser used"}, {"color": "#99ccff", "id": "http status code", "label": "http status code", "shape": "box", "size": 20, "title": "http status code"}, {"color": "#ff99ff", "id": "log file", "label": "log file", "shape": "dot", "size": 40, "title": "log file"}, {"color": "#ff99ff", "id": "content delivery network", "label": "content delivery network", "shape": "dot", "size": 40, "title": "content delivery network"}, {"color": "#ff99ff", "id": "end device", "label": "end device", "shape": "dot", "size": 40, "title": "end device"}, {"color": "#99ccff", "id": "url of  visited website", "label": "url of  visited website", "shape": "box", "size": 20, "title": "url of  visited website"}, {"color": "#99ccff", "id": "date and time of acces", "label": "date and time of acces", "shape": "box", "size": 20, "title": "date and time of acces"}, {"color": "#f7ff99", "id": "user", "label": "user", "shape": "dot", "size": 40, "title": "user"}, {"color": "#99ccff", "id": "chat duration", "label": "chat duration", "shape": "box", "size": 20, "title": "chat duration"}, {"color": "#99ccff", "id": "timestamp of  message", "label": "timestamp of  message", "shape": "box", "size": 20, "title": "timestamp of  message"}, {"color": "#99ccff", "id": "number of dialogue", "label": "number of dialogue", "shape": "box", "size": 20, "title": "number of dialogue"}, {"color": "#99ccff", "id": "approximate location", "label": "approximate location", "shape": "box", "size": 20, "title": "approximate location"}, {"color": "#99ccff", "id": "customer query", "label": "customer query", "shape": "box", "size": 20, "title": "customer query"}, {"color": "#ccff99", "id": "us", "label": "us", "shape": "dot", "size": 40, "title": "us"}, {"color": "#99ccff", "id": "information", "label": "information", "shape": "box", "size": 20, "title": "information"}, {"color": "#99ccff", "id": "vehicle identification number", "label": "vehicle identification number", "shape": "box", "size": 20, "title": "vehicle identification number"}, {"color": "#99ccff", "id": "data", "label": "data", "shape": "box", "size": 20, "title": "data"}, {"color": "#ff99ff", "id": "or corporate brand of  vw group", "label": "or corporate brand of  vw group", "shape": "dot", "size": 40, "title": "or corporate brand of  vw group"}, {"color": "#ff99ff", "id": "service provider", "label": "service provider", "shape": "dot", "size": 40, "title": "service provider"}, {"color": "#ff99ff", "id": "supplier of hardware and software", "label": "supplier of hardware and software", "shape": "dot", "size": 40, "title": "supplier of hardware and software"}, {"color": "#00008B", "id": "", "label": "", "shape": "dot", "size": 40, "title": "unknown"}, {"color": "#99ccff", "id": "your data", "label": "your data", "shape": "box", "size": 20, "title": "your data"}, {"color": "#ff99ff", "id": "those entity that need your data in order to fulfil our contractual and legal obligation as well as to pursue legitimate interest", "label": "those entity that need your data in order to fulfil our contractual and legal obligation as well as to pursue legitimate interest", "shape": "dot", "size": 40, "title": "those entity that need your data in order to fulfil our contractual and legal obligation as well as to pursue legitimate interest"}, {"color": "#ff99ff", "id": "it", "label": "it", "shape": "dot", "size": 40, "title": "it"}, {"color": "#ff99ff", "id": "sale", "label": "sale", "shape": "dot", "size": 40, "title": "sale"}, {"color": "#ff99ff", "id": "nearest server", "label": "nearest server", "shape": "dot", "size": 40, "title": "nearest server"}, {"color": "#ff99ff", "id": "a server within  eu", "label": "a server within  eu", "shape": "dot", "size": 40, "title": "a server within  eu"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "ff000000", "description": "This Privacy Policy outlines how AUDI AG processes your personal data within the context of the website www.audi.com and the applications offered within it. Other websites or other data processing by AUDI AG may be subject to separate privacy policies (e.g., www.audi.com/connect).", "from": "you", "group": "3", "title": "Analytics or Research; ", "to": "personal data", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Email address vulnerability@audi.de: You can use this email address to send us information about cyber security vulnerabilities/incidents or hacker attacks. We process the information provided in your email and your provided contact details in order to process your message, and we use them for further queries if necessary. Insofar as is necessary to deal with your concern, we transmit the information to other corporate brands of the VW Group and/or service providers as well as suppliers of hardware and software, e.g., control units. We only pass on information that does not allow the recipient to draw any conclusions about the person who sent the message. If we also pass on the vehicle identification number in order to deal with the message, we ensure compliance with data protection regulations by means of corresponding data protection agreements.", "from": "you", "group": "17", "title": "Operational Integrity and Security; ", "to": "information about cyber security vulnerabilities/incident or hacker attack", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Email address vulnerability@audi.de: You can use this email address to send us information about cyber security vulnerabilities/incidents or hacker attacks. We process the information provided in your email and your provided contact details in order to process your message, and we use them for further queries if necessary. Insofar as is necessary to deal with your concern, we transmit the information to other corporate brands of the VW Group and/or service providers as well as suppliers of hardware and software, e.g., control units. We only pass on information that does not allow the recipient to draw any conclusions about the person who sent the message. If we also pass on the vehicle identification number in order to deal with the message, we ensure compliance with data protection regulations by means of corresponding data protection agreements.", "from": "you", "group": "17", "title": "Operational Integrity and Security; Marketing; ", "to": "contact detail", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "This Privacy Policy outlines how AUDI AG processes your personal data within the context of the website www.audi.com and the applications offered within it. Other websites or other data processing by AUDI AG may be subject to separate privacy policies (e.g., www.audi.com/connect).", "from": "personal data", "group": "3", "title": "Analytics or Research; ", "to": "audi ag", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "personal data", "group": "16", "title": "Analytics or Research; Analytics or Research; Analytics or Research; ", "to": "audi", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "personal data", "group": "16", "title": "Analytics or Research; Social media integration; ", "to": "chatbot", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In the context of our business relationship, you must provide those items of personal data that are necessary to establish and implement a business relationship or which we are legally obliged to collect. Without these items of data, we will usually have to refuse to conclude the contract or to execute the order, or we will no longer be able to execute an existing contract and may have to terminate it.", "from": "personal data", "group": "22", "title": "Legal requirement; ", "to": "we", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "personal data", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "processor", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "personal data", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "tracking service provider", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "personal data", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "web agency", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "personal data", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "hosting provider", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "personal data", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "it service provider", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "personal data", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "content delivery network provider", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "personal data", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "customer support (audi interaction gmbh)", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "personal data", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "third party", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The transfer of data to third countries (i.e., countries that are not members of the European Union or the European Economic Area) may take place insofar as this is necessary to execute services with respect to you, where this is required by law, or where you have given us your consent. In addition, there is the possibility that we may also pass on your personal data to processors in third countries. This includes your IP address.", "from": "personal data", "group": "27", "title": "Additional service or feature; ", "to": "processor in third country", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Please note that not all third countries have a level of data protection that is recognised as adequate by the European Commission. AUDI AG will only transfer your personal data to third countries insofar as this is permissible under Articles 44 \u2013 49 GDPR. Insofar as AUDI AG is entitled to appropriate guarantees for transfer of data to third countries in accordance with Article 46 para. 2. GDPR (e.g., standard contractual clauses or binding corporate rules), AUDI AG will take additional technical and/or organisational measures to the extent necessary to maintain adequate protection of your personal data.", "from": "personal data", "group": "28", "title": "Legal requirement; ", "to": "third country", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Please note that not all third countries have a level of data protection that is recognised as adequate by the European Commission. AUDI AG will only transfer your personal data to third countries insofar as this is permissible under Articles 44 \u2013 49 GDPR. Insofar as AUDI AG is entitled to appropriate guarantees for transfer of data to third countries in accordance with Article 46 para. 2. GDPR (e.g., standard contractual clauses or binding corporate rules), AUDI AG will take additional technical and/or organisational measures to the extent necessary to maintain adequate protection of your personal data.", "from": "audi ag", "group": "28", "title": "Legal requirement; ", "to": "personal data", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "internet browser", "group": "13", "title": "Basic service or feature; ", "to": "ip address", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "internet browser", "group": "13", "title": "Basic service or feature; ", "to": "internet address of  website", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "internet browser", "group": "13", "title": "Basic service or feature; ", "to": "name of  service provider", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "internet browser", "group": "13", "title": "Basic service or feature; ", "to": "name of  file or information accessed", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "internet browser", "group": "13", "title": "Basic service or feature; ", "to": "date and time as well as duration of  accessing", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "internet browser", "group": "13", "title": "Basic service or feature; ", "to": "data volume transferred", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "internet browser", "group": "13", "title": "Basic service or feature; ", "to": "operating system and information about  internet browser used", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "internet browser", "group": "13", "title": "Basic service or feature; ", "to": "http status code", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "ip address", "group": "13", "title": "Basic service or feature; ", "to": "log file", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The following data is processed by the content delivery network in log files:\n\n- IT usage data, such as the IP address (Internet protocol address) of the end device from which the online offering is accessed\n\n- The URLs of the visited website\n\n- The date and time of access; the location based on the IP address\n\n- The location of the content delivery server\n\nFurther information about the recipients and any third country transfers can be found in Section 4 and Section 5.", "from": "ip address", "group": "15", "title": "Operational Integrity and Security; ", "to": "content delivery network", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The transfer of data to third countries (i.e., countries that are not members of the European Union or the European Economic Area) may take place insofar as this is necessary to execute services with respect to you, where this is required by law, or where you have given us your consent. In addition, there is the possibility that we may also pass on your personal data to processors in third countries. This includes your IP address.", "from": "ip address", "group": "27", "title": "Additional service or feature; ", "to": "processor in third country", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "internet address of  website", "group": "13", "title": "Basic service or feature; ", "to": "log file", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "name of  service provider", "group": "13", "title": "Basic service or feature; ", "to": "log file", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "name of  file or information accessed", "group": "13", "title": "Basic service or feature; ", "to": "log file", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "date and time as well as duration of  accessing", "group": "13", "title": "Basic service or feature; ", "to": "log file", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "data volume transferred", "group": "13", "title": "Basic service or feature; ", "to": "log file", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "operating system and information about  internet browser used", "group": "13", "title": "Basic service or feature; ", "to": "log file", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In particular, the following information is transmitted automatically:\n\n- IP address (internet protocol address) of the end device from which the online offering is accessed\n\n- Internet address of the website from which the online offering was accessed (so-called origin or referrer URL)\n\n- Name of the service provider through whom the online offer is accessed\n\n- Name of the files or information accessed\n\n- Date and time as well as duration of the accessing\n\n- Data volume transferred\n\n- Operating system and information about the internet browser used, including installed add-ons (e.g., for the Flash Player)\n\n- HTTP status code (e.g., \"Request successful\" or \"Requested file not found\")In the log files, the above data is stored without your full IP address, which means that no conclusions can be drawn about your IP address.\n\n2.2 Content delivery network", "from": "http status code", "group": "13", "title": "Basic service or feature; ", "to": "log file", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The following data is processed by the content delivery network in log files:\n\n- IT usage data, such as the IP address (Internet protocol address) of the end device from which the online offering is accessed\n\n- The URLs of the visited website\n\n- The date and time of access; the location based on the IP address\n\n- The location of the content delivery server\n\nFurther information about the recipients and any third country transfers can be found in Section 4 and Section 5.", "from": "end device", "group": "15", "title": "Operational Integrity and Security; ", "to": "ip address", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The following data is processed by the content delivery network in log files:\n\n- IT usage data, such as the IP address (Internet protocol address) of the end device from which the online offering is accessed\n\n- The URLs of the visited website\n\n- The date and time of access; the location based on the IP address\n\n- The location of the content delivery server\n\nFurther information about the recipients and any third country transfers can be found in Section 4 and Section 5.", "from": "end device", "group": "15", "title": "Operational Integrity and Security; ", "to": "url of  visited website", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The following data is processed by the content delivery network in log files:\n\n- IT usage data, such as the IP address (Internet protocol address) of the end device from which the online offering is accessed\n\n- The URLs of the visited website\n\n- The date and time of access; the location based on the IP address\n\n- The location of the content delivery server\n\nFurther information about the recipients and any third country transfers can be found in Section 4 and Section 5.", "from": "end device", "group": "15", "title": "Operational Integrity and Security; ", "to": "date and time of acces", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The following data is processed by the content delivery network in log files:\n\n- IT usage data, such as the IP address (Internet protocol address) of the end device from which the online offering is accessed\n\n- The URLs of the visited website\n\n- The date and time of access; the location based on the IP address\n\n- The location of the content delivery server\n\nFurther information about the recipients and any third country transfers can be found in Section 4 and Section 5.", "from": "url of  visited website", "group": "15", "title": "Operational Integrity and Security; ", "to": "content delivery network", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The following data is processed by the content delivery network in log files:\n\n- IT usage data, such as the IP address (Internet protocol address) of the end device from which the online offering is accessed\n\n- The URLs of the visited website\n\n- The date and time of access; the location based on the IP address\n\n- The location of the content delivery server\n\nFurther information about the recipients and any third country transfers can be found in Section 4 and Section 5.", "from": "date and time of acces", "group": "15", "title": "Operational Integrity and Security; ", "to": "content delivery network", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "user", "group": "16", "title": "Analytics or Research; Analytics or Research; Analytics or Research; ", "to": "personal data", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "user", "group": "16", "title": "Analytics or Research; ", "to": "chat duration", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "user", "group": "16", "title": "Analytics or Research; ", "to": "timestamp of  message", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "user", "group": "16", "title": "Analytics or Research; ", "to": "number of dialogue", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "user", "group": "16", "title": "Analytics or Research; ", "to": "approximate location", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "user", "group": "16", "title": "Analytics or Research; ", "to": "customer query", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "chat duration", "group": "16", "title": "Analytics or Research; ", "to": "audi", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "chat duration", "group": "16", "title": "Analytics or Research; ", "to": "chatbot", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "timestamp of  message", "group": "16", "title": "Analytics or Research; ", "to": "audi", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "timestamp of  message", "group": "16", "title": "Analytics or Research; ", "to": "chatbot", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "number of dialogue", "group": "16", "title": "Analytics or Research; ", "to": "audi", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "number of dialogue", "group": "16", "title": "Analytics or Research; ", "to": "chatbot", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "approximate location", "group": "16", "title": "Analytics or Research; ", "to": "audi", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "approximate location", "group": "16", "title": "Analytics or Research; ", "to": "chatbot", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "customer query", "group": "16", "title": "Analytics or Research; ", "to": "audi", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The use of certain services requires the registration or the provision of personal data. In addition, we process particular personal data of yours when you contact us via the website. We process the data that you provide when using the following functionalities:\n\nCareer and survey chatbot: This website uses the chatbot to provide answers to users\u0027 questions regarding their career at Audi as well as to carry out surveys anonymously. The chatbot does not collect or process any personal data for behavioural analysis. Usage data such as chat duration, timestamps of the messages, number of dialogues and approximate location of the users are stored anonymously for statistical purposes only. In addition, customer queries are stored and processed for a maximum of 7 days in order to process their matter and for internal purposes, e.g., to control and improve our business and service processes (Art. 6 para.1. (b), Art 6 para. 1. (f) GDPR).", "from": "customer query", "group": "16", "title": "Analytics or Research; Social media integration; ", "to": "chatbot", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Email address vulnerability@audi.de: You can use this email address to send us information about cyber security vulnerabilities/incidents or hacker attacks. We process the information provided in your email and your provided contact details in order to process your message, and we use them for further queries if necessary. Insofar as is necessary to deal with your concern, we transmit the information to other corporate brands of the VW Group and/or service providers as well as suppliers of hardware and software, e.g., control units. We only pass on information that does not allow the recipient to draw any conclusions about the person who sent the message. If we also pass on the vehicle identification number in order to deal with the message, we ensure compliance with data protection regulations by means of corresponding data protection agreements.", "from": "information about cyber security vulnerabilities/incident or hacker attack", "group": "17", "title": "Operational Integrity and Security; ", "to": "us", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Email address vulnerability@audi.de: You can use this email address to send us information about cyber security vulnerabilities/incidents or hacker attacks. We process the information provided in your email and your provided contact details in order to process your message, and we use them for further queries if necessary. Insofar as is necessary to deal with your concern, we transmit the information to other corporate brands of the VW Group and/or service providers as well as suppliers of hardware and software, e.g., control units. We only pass on information that does not allow the recipient to draw any conclusions about the person who sent the message. If we also pass on the vehicle identification number in order to deal with the message, we ensure compliance with data protection regulations by means of corresponding data protection agreements.", "from": "us", "group": "17", "title": "Operational Integrity and Security; Marketing; ", "to": "information", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Email address vulnerability@audi.de: You can use this email address to send us information about cyber security vulnerabilities/incidents or hacker attacks. We process the information provided in your email and your provided contact details in order to process your message, and we use them for further queries if necessary. Insofar as is necessary to deal with your concern, we transmit the information to other corporate brands of the VW Group and/or service providers as well as suppliers of hardware and software, e.g., control units. We only pass on information that does not allow the recipient to draw any conclusions about the person who sent the message. If we also pass on the vehicle identification number in order to deal with the message, we ensure compliance with data protection regulations by means of corresponding data protection agreements.", "from": "us", "group": "17", "title": "Operational Integrity and Security; Marketing; ", "to": "vehicle identification number", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "us", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "data", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "us", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "personal data", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Email address vulnerability@audi.de: You can use this email address to send us information about cyber security vulnerabilities/incidents or hacker attacks. We process the information provided in your email and your provided contact details in order to process your message, and we use them for further queries if necessary. Insofar as is necessary to deal with your concern, we transmit the information to other corporate brands of the VW Group and/or service providers as well as suppliers of hardware and software, e.g., control units. We only pass on information that does not allow the recipient to draw any conclusions about the person who sent the message. If we also pass on the vehicle identification number in order to deal with the message, we ensure compliance with data protection regulations by means of corresponding data protection agreements.", "from": "contact detail", "group": "17", "title": "Operational Integrity and Security; Marketing; ", "to": "us", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Email address vulnerability@audi.de: You can use this email address to send us information about cyber security vulnerabilities/incidents or hacker attacks. We process the information provided in your email and your provided contact details in order to process your message, and we use them for further queries if necessary. Insofar as is necessary to deal with your concern, we transmit the information to other corporate brands of the VW Group and/or service providers as well as suppliers of hardware and software, e.g., control units. We only pass on information that does not allow the recipient to draw any conclusions about the person who sent the message. If we also pass on the vehicle identification number in order to deal with the message, we ensure compliance with data protection regulations by means of corresponding data protection agreements.", "from": "information", "group": "17", "title": "Operational Integrity and Security; Marketing; ", "to": "or corporate brand of  vw group", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Email address vulnerability@audi.de: You can use this email address to send us information about cyber security vulnerabilities/incidents or hacker attacks. We process the information provided in your email and your provided contact details in order to process your message, and we use them for further queries if necessary. Insofar as is necessary to deal with your concern, we transmit the information to other corporate brands of the VW Group and/or service providers as well as suppliers of hardware and software, e.g., control units. We only pass on information that does not allow the recipient to draw any conclusions about the person who sent the message. If we also pass on the vehicle identification number in order to deal with the message, we ensure compliance with data protection regulations by means of corresponding data protection agreements.", "from": "information", "group": "17", "title": "Operational Integrity and Security; Marketing; ", "to": "service provider", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Email address vulnerability@audi.de: You can use this email address to send us information about cyber security vulnerabilities/incidents or hacker attacks. We process the information provided in your email and your provided contact details in order to process your message, and we use them for further queries if necessary. Insofar as is necessary to deal with your concern, we transmit the information to other corporate brands of the VW Group and/or service providers as well as suppliers of hardware and software, e.g., control units. We only pass on information that does not allow the recipient to draw any conclusions about the person who sent the message. If we also pass on the vehicle identification number in order to deal with the message, we ensure compliance with data protection regulations by means of corresponding data protection agreements.", "from": "information", "group": "17", "title": "Operational Integrity and Security; Marketing; ", "to": "supplier of hardware and software", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Email address vulnerability@audi.de: You can use this email address to send us information about cyber security vulnerabilities/incidents or hacker attacks. We process the information provided in your email and your provided contact details in order to process your message, and we use them for further queries if necessary. Insofar as is necessary to deal with your concern, we transmit the information to other corporate brands of the VW Group and/or service providers as well as suppliers of hardware and software, e.g., control units. We only pass on information that does not allow the recipient to draw any conclusions about the person who sent the message. If we also pass on the vehicle identification number in order to deal with the message, we ensure compliance with data protection regulations by means of corresponding data protection agreements.", "from": "vehicle identification number", "group": "17", "title": "Operational Integrity and Security; Marketing; ", "to": "or corporate brand of  vw group", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Email address vulnerability@audi.de: You can use this email address to send us information about cyber security vulnerabilities/incidents or hacker attacks. We process the information provided in your email and your provided contact details in order to process your message, and we use them for further queries if necessary. Insofar as is necessary to deal with your concern, we transmit the information to other corporate brands of the VW Group and/or service providers as well as suppliers of hardware and software, e.g., control units. We only pass on information that does not allow the recipient to draw any conclusions about the person who sent the message. If we also pass on the vehicle identification number in order to deal with the message, we ensure compliance with data protection regulations by means of corresponding data protection agreements.", "from": "vehicle identification number", "group": "17", "title": "Operational Integrity and Security; Marketing; ", "to": "service provider", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Email address vulnerability@audi.de: You can use this email address to send us information about cyber security vulnerabilities/incidents or hacker attacks. We process the information provided in your email and your provided contact details in order to process your message, and we use them for further queries if necessary. Insofar as is necessary to deal with your concern, we transmit the information to other corporate brands of the VW Group and/or service providers as well as suppliers of hardware and software, e.g., control units. We only pass on information that does not allow the recipient to draw any conclusions about the person who sent the message. If we also pass on the vehicle identification number in order to deal with the message, we ensure compliance with data protection regulations by means of corresponding data protection agreements.", "from": "vehicle identification number", "group": "17", "title": "Operational Integrity and Security; ", "to": "supplier of hardware and software", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Within AUDI AG, those entities that need your data in order to fulfil our contractual and legal obligations as well as to pursue legitimate interests (e.g.: IT, sales) receive your data.", "from": "", "group": "24", "title": "Legal requirement; ", "to": "your data", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The transfer of data to third countries (i.e., countries that are not members of the European Union or the European Economic Area) may take place insofar as this is necessary to execute services with respect to you, where this is required by law, or where you have given us your consent. In addition, there is the possibility that we may also pass on your personal data to processors in third countries. This includes your IP address.", "from": "", "group": "27", "title": "Additional service or feature; ", "to": "personal data", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "The transfer of data to third countries (i.e., countries that are not members of the European Union or the European Economic Area) may take place insofar as this is necessary to execute services with respect to you, where this is required by law, or where you have given us your consent. In addition, there is the possibility that we may also pass on your personal data to processors in third countries. This includes your IP address.", "from": "", "group": "27", "title": "Additional service or feature; ", "to": "ip address", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Within AUDI AG, those entities that need your data in order to fulfil our contractual and legal obligations as well as to pursue legitimate interests (e.g.: IT, sales) receive your data.", "from": "your data", "group": "24", "title": "Legal requirement; ", "to": "those entity that need your data in order to fulfil our contractual and legal obligation as well as to pursue legitimate interest", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Within AUDI AG, those entities that need your data in order to fulfil our contractual and legal obligations as well as to pursue legitimate interests (e.g.: IT, sales) receive your data.", "from": "your data", "group": "24", "title": "Legal requirement; ", "to": "it", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Within AUDI AG, those entities that need your data in order to fulfil our contractual and legal obligations as well as to pursue legitimate interests (e.g.: IT, sales) receive your data.", "from": "your data", "group": "24", "title": "Legal requirement; ", "to": "sale", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In the context of the use of the content delivery network, your data will be routed to the nearest server in order for the website content to be delivered. If you access the website from the EU, your data will first be transmitted to a server within the EU. Your data will not be saved during this process.", "from": "your data", "group": "31", "title": "Operational Integrity and Security; ", "to": "nearest server", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "In the context of the use of the content delivery network, your data will be routed to the nearest server in order for the website content to be delivered. If you access the website from the EU, your data will first be transmitted to a server within the EU. Your data will not be saved during this process.", "from": "your data", "group": "31", "title": "Operational Integrity and Security; ", "to": "a server within  eu", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "data", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "processor", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "data", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "tracking service provider", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "data", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "web agency", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "data", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "hosting provider", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "data", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "it service provider", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "data", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "content delivery network provider", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "Service providers deployed by us and acting on our behalf (so-called processors) who assist with data processing on our behalf also receive data for these purposes. Service providers can also be commissioned to provide server capacity. Specifically, this includes companies in the following categories:\n\n- Tracking service providers\n\n- Web agencies\n\n- Hosting providers and IT service providers\n\n- Content delivery network providers\n\n- Customer support (Audi Interaction GmbH)\n\nIn principle, we will only transfer your personal data to third parties if this is necessary to fulfil a contract, if we or the third party have a legitimate interest in it being passed on, or if you have given your consent to this. In addition, we may pass on your personal data to the following recipients or categories of recipients who act as controllers under data protection law, insofar as this is necessary to achieve the purposes described above:", "from": "data", "group": "25", "title": "Additional service or feature; Operational Integrity and Security; ", "to": "customer support (audi interaction gmbh)", "width": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": true,
+        "filter": [
+            "physics"
+        ]
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": false,
+        "repulsion": {
+            "centralGravity": 0.2,
+            "damping": 0.09,
+            "nodeDistance": 100,
+            "springConstant": 0.05,
+            "springLength": 200
+        },
+        "solver": "repulsion",
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+                  // if this network requires displaying the configure window,
+                  // put it in its div
+                  options.configure["container"] = document.getElementById("config");
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+                    network.on("selectNode", neighbourhoodHighlight);
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

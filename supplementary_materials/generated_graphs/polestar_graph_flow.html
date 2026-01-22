@@ -1,0 +1,745 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script>function neighbourhoodHighlight(params) {
+  // console.log("in nieghbourhoodhighlight");
+  allNodes = nodes.get({ returnType: "Object" });
+  // originalNodes = JSON.parse(JSON.stringify(allNodes));
+  // if something is selected:
+  if (params.nodes.length > 0) {
+    highlightActive = true;
+    var i, j;
+    var selectedNode = params.nodes[0];
+    var degrees = 2;
+
+    // mark all nodes as hard to read.
+    for (let nodeId in allNodes) {
+      // nodeColors[nodeId] = allNodes[nodeId].color;
+      allNodes[nodeId].color = "rgba(200,200,200,0.5)";
+      if (allNodes[nodeId].hiddenLabel === undefined) {
+        allNodes[nodeId].hiddenLabel = allNodes[nodeId].label;
+        allNodes[nodeId].label = undefined;
+      }
+    }
+    var connectedNodes = network.getConnectedNodes(selectedNode);
+    var allConnectedNodes = [];
+
+    // get the second degree nodes
+    for (i = 1; i < degrees; i++) {
+      for (j = 0; j < connectedNodes.length; j++) {
+        allConnectedNodes = allConnectedNodes.concat(
+          network.getConnectedNodes(connectedNodes[j])
+        );
+      }
+    }
+
+    // all second degree nodes get a different color and their label back
+    for (i = 0; i < allConnectedNodes.length; i++) {
+      // allNodes[allConnectedNodes[i]].color = "pink";
+      allNodes[allConnectedNodes[i]].color = "rgba(150,150,150,0.75)";
+      if (allNodes[allConnectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[allConnectedNodes[i]].label =
+          allNodes[allConnectedNodes[i]].hiddenLabel;
+        allNodes[allConnectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // all first degree nodes get their own color and their label back
+    for (i = 0; i < connectedNodes.length; i++) {
+      // allNodes[connectedNodes[i]].color = undefined;
+      allNodes[connectedNodes[i]].color = nodeColors[connectedNodes[i]];
+      if (allNodes[connectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[connectedNodes[i]].label =
+          allNodes[connectedNodes[i]].hiddenLabel;
+        allNodes[connectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // the main node gets its own color and its label back.
+    // allNodes[selectedNode].color = undefined;
+    allNodes[selectedNode].color = nodeColors[selectedNode];
+    if (allNodes[selectedNode].hiddenLabel !== undefined) {
+      allNodes[selectedNode].label = allNodes[selectedNode].hiddenLabel;
+      allNodes[selectedNode].hiddenLabel = undefined;
+    }
+  } else if (highlightActive === true) {
+    // console.log("highlightActive was true");
+    // reset all nodes
+    for (let nodeId in allNodes) {
+      // allNodes[nodeId].color = "purple";
+      allNodes[nodeId].color = nodeColors[nodeId];
+      // delete allNodes[nodeId].color;
+      if (allNodes[nodeId].hiddenLabel !== undefined) {
+        allNodes[nodeId].label = allNodes[nodeId].hiddenLabel;
+        allNodes[nodeId].hiddenLabel = undefined;
+      }
+    }
+    highlightActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  if (params.nodes.length > 0) {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        // console.log(allNodes[nodeId]);
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  } else {
+    // console.log("Nothing was selected");
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        // console.log(allNodes[nodeId]);
+        // allNodes[nodeId].color = {};
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  }
+}
+
+function filterHighlight(params) {
+  allNodes = nodes.get({ returnType: "Object" });
+  // if something is selected:
+  if (params.nodes.length > 0) {
+    filterActive = true;
+    let selectedNodes = params.nodes;
+
+    // hiding all nodes and saving the label
+    for (let nodeId in allNodes) {
+      allNodes[nodeId].hidden = true;
+      if (allNodes[nodeId].savedLabel === undefined) {
+        allNodes[nodeId].savedLabel = allNodes[nodeId].label;
+        allNodes[nodeId].label = undefined;
+      }
+    }
+
+    for (let i=0; i < selectedNodes.length; i++) {
+      allNodes[selectedNodes[i]].hidden = false;
+      if (allNodes[selectedNodes[i]].savedLabel !== undefined) {
+        allNodes[selectedNodes[i]].label = allNodes[selectedNodes[i]].savedLabel;
+        allNodes[selectedNodes[i]].savedLabel = undefined;
+      }
+    }
+
+  } else if (filterActive === true) {
+    // reset all nodes
+    for (let nodeId in allNodes) {
+      allNodes[nodeId].hidden = false;
+      if (allNodes[nodeId].savedLabel !== undefined) {
+        allNodes[nodeId].label = allNodes[nodeId].savedLabel;
+        allNodes[nodeId].savedLabel = undefined;
+      }
+    }
+    filterActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  if (params.nodes.length > 0) {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  } else {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  }
+}
+
+function selectNode(nodes) {
+  network.selectNodes(nodes);
+  neighbourhoodHighlight({ nodes: nodes });
+  return nodes;
+}
+
+function selectNodes(nodes) {
+  network.selectNodes(nodes);
+  filterHighlight({nodes: nodes});
+  return nodes;
+}
+
+function highlightFilter(filter) {
+  let selectedNodes = []
+  let selectedProp = filter['property']
+  if (filter['item'] === 'node') {
+    let allNodes = nodes.get({ returnType: "Object" });
+    for (let nodeId in allNodes) {
+      if (allNodes[nodeId][selectedProp] && filter['value'].includes((allNodes[nodeId][selectedProp]).toString())) {
+        selectedNodes.push(nodeId)
+      }
+    }
+  }
+  else if (filter['item'] === 'edge'){
+    let allEdges = edges.get({returnType: 'object'});
+    // check if the selected property exists for selected edge and select the nodes connected to the edge
+    for (let edge in allEdges) {
+      if (allEdges[edge][selectedProp] && filter['value'].includes((allEdges[edge][selectedProp]).toString())) {
+        selectedNodes.push(allEdges[edge]['from'])
+        selectedNodes.push(allEdges[edge]['to'])
+      }
+    }
+  }
+  selectNodes(selectedNodes)
+}</script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+            
+            
+            
+            
+            
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.0.0-rc.4/css/tom-select.min.css" integrity="sha512-43fHB3GLgZfz8QXl1RPQ8O66oIgv3po9cJ5erMt1c4QISq9dYb195T3vr5ImnJPXuVroKcGBPXBFKETW8jrPNQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.0.0-rc.4/js/tom-select.complete.js" integrity="sha512-jeF9CfnvzDiw9G9xiksVjxR2lib44Gnovvkv+3CgCG6NXCD4gqlA5nDAVW5WjpA+i+/zKsUWV5xNEbW1X/HH0Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 700px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+             #config {
+                 float: left;
+                 width: 400px;
+                 height: 600px;
+             }
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+                <div id="select-menu" class="card-header">
+                    <div class="row no-gutters">
+                        <div class="col-10 pb-2">
+                            <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="selectNode([value]);"
+                            id="select-node"
+                            placeholder="Select node..."
+                            >
+                                <option selected>Select a Node by ID</option>
+                                
+                                    <option value=""></option>
+                                
+                                    <option value="personal data">personal data</option>
+                                
+                                    <option value="name">name</option>
+                                
+                                    <option value="phone number">phone number</option>
+                                
+                                    <option value="e-mail address">e-mail address</option>
+                                
+                                    <option value="polestar id">polestar id</option>
+                                
+                                    <option value="vehicle identification number ">vehicle identification number </option>
+                                
+                                    <option value="vehicle ownership period">vehicle ownership period</option>
+                                
+                                    <option value="subscription service">subscription service</option>
+                                
+                                    <option value="vehicle model and year">vehicle model and year</option>
+                                
+                                    <option value="vehicle specification">vehicle specification</option>
+                                
+                                    <option value="ip address">ip address</option>
+                                
+                                    <option value="geography">geography</option>
+                                
+                                    <option value="city">city</option>
+                                
+                                    <option value="country">country</option>
+                                
+                                    <option value="region">region</option>
+                                
+                                    <option value="continent">continent</option>
+                                
+                                    <option value="device information">device information</option>
+                                
+                                    <option value="device type">device type</option>
+                                
+                                    <option value="device category">device category</option>
+                                
+                                    <option value="device language setting">device language setting</option>
+                                
+                                    <option value="device brand">device brand</option>
+                                
+                                    <option value="device model">device model</option>
+                                
+                                    <option value="operating system">operating system</option>
+                                
+                                    <option value="version">version</option>
+                                
+                                    <option value="vehicle connection status">vehicle connection status</option>
+                                
+                                    <option value="vehicle model">vehicle model</option>
+                                
+                                    <option value="vehicle year">vehicle year</option>
+                                
+                                    <option value="owner type">owner type</option>
+                                
+                                    <option value="order type">order type</option>
+                                
+                                    <option value="usage data">usage data</option>
+                                
+                                    <option value="click in  app">click in  app</option>
+                                
+                                    <option value="feature used">feature used</option>
+                                
+                                    <option value="page viewed">page viewed</option>
+                                
+                                    <option value="potential issue or error">potential issue or error</option>
+                                
+                                    <option value="polestar">polestar</option>
+                                
+                                    <option value="it provider">it provider</option>
+                                
+                                    <option value="polestar affiliate">polestar affiliate</option>
+                                
+                                    <option value="subcontractor">subcontractor</option>
+                                
+                                    <option value="busines partner">busines partner</option>
+                                
+                                    <option value="provider of social media platform">provider of social media platform</option>
+                                
+                                    <option value="united state">united state</option>
+                                
+                                    <option value="united kingdom">united kingdom</option>
+                                
+                                    <option value="you">you</option>
+                                
+                                    <option value="request">request</option>
+                                
+                                    <option value="we">we</option>
+                                
+                                    <option value="your personal data">your personal data</option>
+                                
+                                    <option value="your information">your information</option>
+                                
+                                    <option value="a busines partner">a busines partner</option>
+                                
+                                    <option value="a subcontractor">a subcontractor</option>
+                                
+                                    <option value="vehicle">vehicle</option>
+                                
+                                    <option value="battery level">battery level</option>
+                                
+                                    <option value="charging status">charging status</option>
+                                
+                                    <option value="door lock status">door lock status</option>
+                                
+                                    <option value="polestar app">polestar app</option>
+                                
+                                    <option value="location">location</option>
+                                
+                                    <option value="contact information">contact information</option>
+                                
+                                    <option value="home address">home address</option>
+                                
+                                    <option value="insurance detail">insurance detail</option>
+                                
+                                    <option value="policy">policy</option>
+                                
+                                    <option value="claim number">claim number</option>
+                                
+                                    <option value="transaction-related data">transaction-related data</option>
+                                
+                                    <option value="damage cause">damage cause</option>
+                                
+                                    <option value="vehicle status">vehicle status</option>
+                                
+                                    <option value="maintenance reminder">maintenance reminder</option>
+                                
+                                    <option value="service reminder">service reminder</option>
+                                
+                                    <option value="vehicle control">vehicle control</option>
+                                
+                                    <option value="customer support">customer support</option>
+                                
+                                    <option value="mobile device">mobile device</option>
+                                
+                                    <option value="location data">location data</option>
+                                
+                                    <option value="movement">movement</option>
+                                
+                                    <option value="fitnes">fitnes</option>
+                                
+                                    <option value="data about your movement">data about your movement</option>
+                                
+                                    <option value="data about your fitnes">data about your fitnes</option>
+                                
+                                    <option value="customer">customer</option>
+                                
+                                    <option value="chat message">chat message</option>
+                                
+                                    <option value="app version">app version</option>
+                                
+                                    <option value="device model name">device model name</option>
+                                
+                                    <option value="fcm token">fcm token</option>
+                                
+                                    <option value="os version">os version</option>
+                                
+                                    <option value="vocmo appid">vocmo appid</option>
+                                
+                                    <option value="customer support chat">customer support chat</option>
+                                
+                                    <option value="case">case</option>
+                                
+                                    <option value="customer relationship management system">customer relationship management system</option>
+                                
+                                    <option value="user">user</option>
+                                
+                                    <option value="analytic">analytic</option>
+                                
+                            </select>
+                        </div>
+                        <div class="col-2 pb-2">
+                            <button type="button" class="btn btn-primary btn-block" onclick="neighbourhoodHighlight({nodes: []});">Reset Selection</button>
+                        </div>
+                    </div>
+                </div>
+            
+            
+              <div id="filter-menu" class="card-header">
+                <div class="row no-gutters">
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'item')"
+                            id="select-item"
+                        >
+                        <option value="">Select a network item</option>
+                        <option value="edge">edge</option>
+                        <option value="node">node</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'property')"
+                            id="select-property"
+                        >
+                        <option value="">Select a property...</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            id="select-value"
+                        >
+                        <option value="">Select value(s)...</option>
+                    </select>
+                  </div>
+                  <div class="col-1 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="highlightFilter(filter);">Filter</button>
+                  </div>
+                  <div class="col-2 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="clearFilter(true)">Reset Selection</button>
+                  </div>
+                </div>
+              </div>
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+            <div id="config"></div>
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+                  new TomSelect("#select-node",{
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      }
+                  });
+              
+
+              
+                  // explicitly using onItemAdd and this function as we need to save multiple values
+                  let updateValueFilter = function() {
+                      return function () {
+                      filter['value'].push(arguments[0])
+                      }
+                  }
+
+                  let valueControl = new TomSelect("#select-value",{
+                      maxItems: null,
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: updateValueFilter()
+                  });
+
+                  let addValues = function() {
+                      return function () {
+                          // clear the current value options and add the selected attribute values
+                          // tom-select handles duplicates
+                          let selectedProperty = arguments[0];
+                          valueControl.clear();
+                          valueControl.clearOptions();
+                          filter['value'] = []
+                          if (filter['item'] === 'node') {
+                              for (let each in allNodes) {
+                                  valueControl.addOption({
+                                      id:allNodes[each][selectedProperty],
+                                      title:allNodes[each][selectedProperty]
+                                  })
+                              }
+                          }
+                          else if (filter['item'] === 'edge') {
+                              for (let each in allEdges) {
+                                  valueControl.addOption({
+                                      id:allEdges[each][selectedProperty],
+                                      title:allEdges[each][selectedProperty]
+                                  })
+                              }
+                          }
+                      }
+                  };
+
+                  let propControl = new TomSelect("#select-property",{
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addValues()
+                  });
+
+                  let addProperties = function() {
+                      return function () {
+                          // loops through the selected network item and adds the attributes to dropdown
+                          // tom-select handles duplicates
+                          clearFilter(false)
+                          if (arguments[0] === 'edge') {
+                              for (let each in allEdges) {
+                                  if (allEdges.hasOwnProperty(each)) {
+                                      for (let eachProp in allEdges[each]) {
+                                          if (allEdges[each].hasOwnProperty(eachProp)) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                          else if (arguments[0] === 'node') {
+                              for (let each in allNodes) {
+                                  if (allNodes.hasOwnProperty(each)) {
+                                      for (let eachProp in allNodes[each]) {
+                                          if (allNodes[each].hasOwnProperty(eachProp)
+                                              && (eachProp !== 'hidden' && eachProp !== 'savedLabel'
+                                                  && eachProp !== 'hiddenLabel')) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  };
+
+                  let itemControl = new TomSelect("#select-item",{
+                      create: false,
+                      sortField:{
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addProperties()
+                  });
+
+                  function clearFilter(reset) {
+                      // utility function to clear all the selected filter options
+                      // if reset is set to true, the existing filter will be removed
+                      // else, only the dropdown options are cleared
+                      propControl.clear();
+                      propControl.clearOptions();
+                      valueControl.clear();
+                      valueControl.clearOptions();
+                      filter = {
+                          item : '',
+                          property : '',
+                          value : []
+                      }
+                      if (reset) {
+                          itemControl.clear();
+                          filterHighlight({nodes: []})
+                      }
+                  }
+
+                  function updateFilter(value, key) {
+                      // key could be 'item' or 'property' and value is as selected in dropdown
+                      filter[key] = value
+                  }
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#00008B", "id": "", "label": "", "shape": "dot", "size": 40, "title": "unknown"}, {"color": "#99ccff", "id": "personal data", "label": "personal data", "shape": "box", "size": 20, "title": "personal data"}, {"color": "#99ccff", "id": "name", "label": "name", "shape": "box", "size": 20, "title": "name"}, {"color": "#99ccff", "id": "phone number", "label": "phone number", "shape": "box", "size": 20, "title": "phone number"}, {"color": "#99ccff", "id": "e-mail address", "label": "e-mail address", "shape": "box", "size": 20, "title": "e-mail address"}, {"color": "#99ccff", "id": "polestar id", "label": "polestar id", "shape": "box", "size": 20, "title": "polestar id"}, {"color": "#99ccff", "id": "vehicle identification number ", "label": "vehicle identification number ", "shape": "box", "size": 20, "title": "vehicle identification number "}, {"color": "#99ccff", "id": "vehicle ownership period", "label": "vehicle ownership period", "shape": "box", "size": 20, "title": "vehicle ownership period"}, {"color": "#99ccff", "id": "subscription service", "label": "subscription service", "shape": "box", "size": 20, "title": "subscription service"}, {"color": "#99ccff", "id": "vehicle model and year", "label": "vehicle model and year", "shape": "box", "size": 20, "title": "vehicle model and year"}, {"color": "#99ccff", "id": "vehicle specification", "label": "vehicle specification", "shape": "box", "size": 20, "title": "vehicle specification"}, {"color": "#99ccff", "id": "ip address", "label": "ip address", "shape": "box", "size": 20, "title": "ip address"}, {"color": "#99ccff", "id": "geography", "label": "geography", "shape": "box", "size": 20, "title": "geography"}, {"color": "#99ccff", "id": "city", "label": "city", "shape": "box", "size": 20, "title": "city"}, {"color": "#99ccff", "id": "country", "label": "country", "shape": "box", "size": 20, "title": "country"}, {"color": "#99ccff", "id": "region", "label": "region", "shape": "box", "size": 20, "title": "region"}, {"color": "#99ccff", "id": "continent", "label": "continent", "shape": "box", "size": 20, "title": "continent"}, {"color": "#99ccff", "id": "device information", "label": "device information", "shape": "box", "size": 20, "title": "device information"}, {"color": "#99ccff", "id": "device type", "label": "device type", "shape": "box", "size": 20, "title": "device type"}, {"color": "#99ccff", "id": "device category", "label": "device category", "shape": "box", "size": 20, "title": "device category"}, {"color": "#99ccff", "id": "device language setting", "label": "device language setting", "shape": "box", "size": 20, "title": "device language setting"}, {"color": "#99ccff", "id": "device brand", "label": "device brand", "shape": "box", "size": 20, "title": "device brand"}, {"color": "#99ccff", "id": "device model", "label": "device model", "shape": "box", "size": 20, "title": "device model"}, {"color": "#99ccff", "id": "operating system", "label": "operating system", "shape": "box", "size": 20, "title": "operating system"}, {"color": "#99ccff", "id": "version", "label": "version", "shape": "box", "size": 20, "title": "version"}, {"color": "#99ccff", "id": "vehicle connection status", "label": "vehicle connection status", "shape": "box", "size": 20, "title": "vehicle connection status"}, {"color": "#99ccff", "id": "vehicle model", "label": "vehicle model", "shape": "box", "size": 20, "title": "vehicle model"}, {"color": "#99ccff", "id": "vehicle year", "label": "vehicle year", "shape": "box", "size": 20, "title": "vehicle year"}, {"color": "#99ccff", "id": "owner type", "label": "owner type", "shape": "box", "size": 20, "title": "owner type"}, {"color": "#99ccff", "id": "order type", "label": "order type", "shape": "box", "size": 20, "title": "order type"}, {"color": "#99ccff", "id": "usage data", "label": "usage data", "shape": "box", "size": 20, "title": "usage data"}, {"color": "#99ccff", "id": "click in  app", "label": "click in  app", "shape": "box", "size": 20, "title": "click in  app"}, {"color": "#99ccff", "id": "feature used", "label": "feature used", "shape": "box", "size": 20, "title": "feature used"}, {"color": "#99ccff", "id": "page viewed", "label": "page viewed", "shape": "box", "size": 20, "title": "page viewed"}, {"color": "#99ccff", "id": "potential issue or error", "label": "potential issue or error", "shape": "box", "size": 20, "title": "potential issue or error"}, {"color": "#ccff99", "id": "polestar", "label": "polestar", "shape": "dot", "size": 40, "title": "polestar"}, {"color": "#ff99ff", "id": "it provider", "label": "it provider", "shape": "dot", "size": 40, "title": "it provider"}, {"color": "#ccff99", "id": "polestar affiliate", "label": "polestar affiliate", "shape": "dot", "size": 40, "title": "polestar affiliate"}, {"color": "#ff99ff", "id": "subcontractor", "label": "subcontractor", "shape": "dot", "size": 40, "title": "subcontractor"}, {"color": "#ff99ff", "id": "busines partner", "label": "busines partner", "shape": "dot", "size": 40, "title": "busines partner"}, {"color": "#ff99ff", "id": "provider of social media platform", "label": "provider of social media platform", "shape": "dot", "size": 40, "title": "provider of social media platform"}, {"color": "#ff99ff", "id": "united state", "label": "united state", "shape": "dot", "size": 40, "title": "united state"}, {"color": "#ff99ff", "id": "united kingdom", "label": "united kingdom", "shape": "dot", "size": 40, "title": "united kingdom"}, {"color": "#f7ff99", "id": "you", "label": "you", "shape": "dot", "size": 40, "title": "you"}, {"color": "#99ccff", "id": "request", "label": "request", "shape": "box", "size": 20, "title": "request"}, {"color": "#ccff99", "id": "we", "label": "we", "shape": "dot", "size": 40, "title": "we"}, {"color": "#99ccff", "id": "your personal data", "label": "your personal data", "shape": "box", "size": 20, "title": "your personal data"}, {"color": "#99ccff", "id": "your information", "label": "your information", "shape": "box", "size": 20, "title": "your information"}, {"color": "#ff99ff", "id": "a busines partner", "label": "a busines partner", "shape": "dot", "size": 40, "title": "a busines partner"}, {"color": "#ff99ff", "id": "a subcontractor", "label": "a subcontractor", "shape": "dot", "size": 40, "title": "a subcontractor"}, {"color": "#ff99ff", "id": "vehicle", "label": "vehicle", "shape": "dot", "size": 40, "title": "vehicle"}, {"color": "#99ccff", "id": "battery level", "label": "battery level", "shape": "box", "size": 20, "title": "battery level"}, {"color": "#99ccff", "id": "charging status", "label": "charging status", "shape": "box", "size": 20, "title": "charging status"}, {"color": "#99ccff", "id": "door lock status", "label": "door lock status", "shape": "box", "size": 20, "title": "door lock status"}, {"color": "#ccff99", "id": "polestar app", "label": "polestar app", "shape": "dot", "size": 40, "title": "polestar app"}, {"color": "#99ccff", "id": "location", "label": "location", "shape": "box", "size": 20, "title": "location"}, {"color": "#99ccff", "id": "contact information", "label": "contact information", "shape": "box", "size": 20, "title": "contact information"}, {"color": "#99ccff", "id": "home address", "label": "home address", "shape": "box", "size": 20, "title": "home address"}, {"color": "#99ccff", "id": "insurance detail", "label": "insurance detail", "shape": "box", "size": 20, "title": "insurance detail"}, {"color": "#99ccff", "id": "policy", "label": "policy", "shape": "box", "size": 20, "title": "policy"}, {"color": "#99ccff", "id": "claim number", "label": "claim number", "shape": "box", "size": 20, "title": "claim number"}, {"color": "#99ccff", "id": "transaction-related data", "label": "transaction-related data", "shape": "box", "size": 20, "title": "transaction-related data"}, {"color": "#99ccff", "id": "damage cause", "label": "damage cause", "shape": "box", "size": 20, "title": "damage cause"}, {"color": "#99ccff", "id": "vehicle status", "label": "vehicle status", "shape": "box", "size": 20, "title": "vehicle status"}, {"color": "#99ccff", "id": "maintenance reminder", "label": "maintenance reminder", "shape": "box", "size": 20, "title": "maintenance reminder"}, {"color": "#99ccff", "id": "service reminder", "label": "service reminder", "shape": "box", "size": 20, "title": "service reminder"}, {"color": "#ff99ff", "id": "vehicle control", "label": "vehicle control", "shape": "dot", "size": 40, "title": "vehicle control"}, {"color": "#ff99ff", "id": "customer support", "label": "customer support", "shape": "dot", "size": 40, "title": "customer support"}, {"color": "#ff99ff", "id": "mobile device", "label": "mobile device", "shape": "dot", "size": 40, "title": "mobile device"}, {"color": "#99ccff", "id": "location data", "label": "location data", "shape": "box", "size": 20, "title": "location data"}, {"color": "#99ccff", "id": "movement", "label": "movement", "shape": "box", "size": 20, "title": "movement"}, {"color": "#99ccff", "id": "fitnes", "label": "fitnes", "shape": "box", "size": 20, "title": "fitnes"}, {"color": "#99ccff", "id": "data about your movement", "label": "data about your movement", "shape": "box", "size": 20, "title": "data about your movement"}, {"color": "#99ccff", "id": "data about your fitnes", "label": "data about your fitnes", "shape": "box", "size": 20, "title": "data about your fitnes"}, {"color": "#f7ff99", "id": "customer", "label": "customer", "shape": "dot", "size": 40, "title": "customer"}, {"color": "#99ccff", "id": "chat message", "label": "chat message", "shape": "box", "size": 20, "title": "chat message"}, {"color": "#99ccff", "id": "app version", "label": "app version", "shape": "box", "size": 20, "title": "app version"}, {"color": "#99ccff", "id": "device model name", "label": "device model name", "shape": "box", "size": 20, "title": "device model name"}, {"color": "#99ccff", "id": "fcm token", "label": "fcm token", "shape": "box", "size": 20, "title": "fcm token"}, {"color": "#99ccff", "id": "os version", "label": "os version", "shape": "box", "size": 20, "title": "os version"}, {"color": "#99ccff", "id": "vocmo appid", "label": "vocmo appid", "shape": "box", "size": 20, "title": "vocmo appid"}, {"color": "#99ccff", "id": "customer support chat", "label": "customer support chat", "shape": "box", "size": 20, "title": "customer support chat"}, {"color": "#99ccff", "id": "case", "label": "case", "shape": "box", "size": 20, "title": "case"}, {"color": "#ff99ff", "id": "customer relationship management system", "label": "customer relationship management system", "shape": "dot", "size": 40, "title": "customer relationship management system"}, {"color": "#f7ff99", "id": "user", "label": "user", "shape": "dot", "size": 40, "title": "user"}, {"color": "#ff99ff", "id": "analytic", "label": "analytic", "shape": "dot", "size": 40, "title": "analytic"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "ff000000", "description": "**** 1. Intro\n\nThis document describes how Polestar processes your personal data when you use the Polestar mobile application (\u201c Polestar app \u201d).", "from": "", "group": "1", "title": "Operational Integrity and Security; ", "to": "personal data", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "", "group": "13", "title": "Legal requirement; ", "to": "name", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "", "group": "13", "title": "Legal requirement; ", "to": "phone number", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "", "group": "13", "title": "Legal requirement; ", "to": "e-mail address", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "", "group": "13", "title": "Legal requirement; ", "to": "polestar id", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "", "group": "13", "title": "Legal requirement; ", "to": "vehicle identification number ", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "", "group": "13", "title": "Legal requirement; ", "to": "vehicle ownership period", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "", "group": "13", "title": "Legal requirement; ", "to": "subscription service", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "", "group": "13", "title": "Legal requirement; ", "to": "vehicle model and year", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "", "group": "13", "title": "Legal requirement; ", "to": "vehicle specification", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "ip address", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "geography", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "city", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "country", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "region", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "continent", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "device information", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "device type", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "device category", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "device language setting", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "device brand", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "device model", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "operating system", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "version", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "vehicle connection status", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "vehicle model", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "vehicle year", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "owner type", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "order type", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "usage data", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "click in  app", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "feature used", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "page viewed", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "", "group": "48", "title": "Analytics or Research; ", "to": "potential issue or error", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "**** 1. Intro\n\nThis document describes how Polestar processes your personal data when you use the Polestar mobile application (\u201c Polestar app \u201d).", "from": "personal data", "group": "1", "title": "Operational Integrity and Security; ", "to": "polestar", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "**** 2. When do we process your personal data?\n\n**** 3. Disclosure of your personal data\n\nWe will disclose your personal data with the following categories of recipients, on a need-to-know basis:\n\n- IT providers, e.g. companies that manage the necessary operation, technical support and maintenance of our IT solutions,\n\n- Polestar affiliates,\n\n- Subcontractors: chat and messaging services, providers of analytics services (e.g. Google LCC and Firebase Inc.),\n\n- Business partners, e.g. legal counsels,\n\n- Providers of social media platforms.", "from": "personal data", "group": "2", "title": "Basic service or feature; Operational Integrity and Security; ", "to": "it provider", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "**** 2. When do we process your personal data?\n\n**** 3. Disclosure of your personal data\n\nWe will disclose your personal data with the following categories of recipients, on a need-to-know basis:\n\n- IT providers, e.g. companies that manage the necessary operation, technical support and maintenance of our IT solutions,\n\n- Polestar affiliates,\n\n- Subcontractors: chat and messaging services, providers of analytics services (e.g. Google LCC and Firebase Inc.),\n\n- Business partners, e.g. legal counsels,\n\n- Providers of social media platforms.", "from": "personal data", "group": "2", "title": "Basic service or feature; ", "to": "polestar affiliate", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "**** 2. When do we process your personal data?\n\n**** 3. Disclosure of your personal data\n\nWe will disclose your personal data with the following categories of recipients, on a need-to-know basis:\n\n- IT providers, e.g. companies that manage the necessary operation, technical support and maintenance of our IT solutions,\n\n- Polestar affiliates,\n\n- Subcontractors: chat and messaging services, providers of analytics services (e.g. Google LCC and Firebase Inc.),\n\n- Business partners, e.g. legal counsels,\n\n- Providers of social media platforms.", "from": "personal data", "group": "2", "title": "Basic service or feature; ", "to": "subcontractor", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "**** 2. When do we process your personal data?\n\n**** 3. Disclosure of your personal data\n\nWe will disclose your personal data with the following categories of recipients, on a need-to-know basis:\n\n- IT providers, e.g. companies that manage the necessary operation, technical support and maintenance of our IT solutions,\n\n- Polestar affiliates,\n\n- Subcontractors: chat and messaging services, providers of analytics services (e.g. Google LCC and Firebase Inc.),\n\n- Business partners, e.g. legal counsels,\n\n- Providers of social media platforms.", "from": "personal data", "group": "2", "title": "Basic service or feature; ", "to": "busines partner", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "**** 2. When do we process your personal data?\n\n**** 3. Disclosure of your personal data\n\nWe will disclose your personal data with the following categories of recipients, on a need-to-know basis:\n\n- IT providers, e.g. companies that manage the necessary operation, technical support and maintenance of our IT solutions,\n\n- Polestar affiliates,\n\n- Subcontractors: chat and messaging services, providers of analytics services (e.g. Google LCC and Firebase Inc.),\n\n- Business partners, e.g. legal counsels,\n\n- Providers of social media platforms.", "from": "personal data", "group": "2", "title": "Basic service or feature; ", "to": "provider of social media platform", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "We transfer personal data to the following countries outside of the EU/EEA: the United States and the United Kingdom.", "from": "personal data", "group": "4", "title": "Other; ", "to": "united state", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "We transfer personal data to the following countries outside of the EU/EEA: the United States and the United Kingdom.", "from": "personal data", "group": "4", "title": "Other; ", "to": "united kingdom", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "**** 2. When do we process your personal data?\n\n**** 3. Disclosure of your personal data\n\nWe will disclose your personal data with the following categories of recipients, on a need-to-know basis:\n\n- IT providers, e.g. companies that manage the necessary operation, technical support and maintenance of our IT solutions,\n\n- Polestar affiliates,\n\n- Subcontractors: chat and messaging services, providers of analytics services (e.g. Google LCC and Firebase Inc.),\n\n- Business partners, e.g. legal counsels,\n\n- Providers of social media platforms.", "from": "you", "group": "2", "title": "Basic service or feature; Operational Integrity and Security; ", "to": "personal data", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Legal basis | Performance of the contract to provide roadside assistance services (GDPR, article 6.1 (b)) and, legitimate interest, to administer your request (GDPR, article 6.1 (f))., Contact us if you want to learn more about how we balance your interests against ours.", "from": "you", "group": "34", "title": "Legal requirement; Basic service or feature; ", "to": "request", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "**** 4. Transfer of your personal data\n\nWe strive to process your personal data within the EU/EEA area. However, your personal data will be transferred outside the EU/EEA in some situations, such as when we share your information with a business partner or subcontractor operating outside the EU/EEA.", "from": "we", "group": "3", "title": "Merger/Acquisition; ", "to": "your personal data", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "**** 4. Transfer of your personal data\n\nWe strive to process your personal data within the EU/EEA area. However, your personal data will be transferred outside the EU/EEA in some situations, such as when we share your information with a business partner or subcontractor operating outside the EU/EEA.", "from": "we", "group": "3", "title": "Merger/Acquisition; ", "to": "your information", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "**** 4. Transfer of your personal data\n\nWe strive to process your personal data within the EU/EEA area. However, your personal data will be transferred outside the EU/EEA in some situations, such as when we share your information with a business partner or subcontractor operating outside the EU/EEA.", "from": "your personal data", "group": "3", "title": "Merger/Acquisition; ", "to": "a busines partner", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "**** 4. Transfer of your personal data\n\nWe strive to process your personal data within the EU/EEA area. However, your personal data will be transferred outside the EU/EEA in some situations, such as when we share your information with a business partner or subcontractor operating outside the EU/EEA.", "from": "your personal data", "group": "3", "title": "Other; ", "to": "a subcontractor", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "**** 4. Transfer of your personal data\n\nWe strive to process your personal data within the EU/EEA area. However, your personal data will be transferred outside the EU/EEA in some situations, such as when we share your information with a business partner or subcontractor operating outside the EU/EEA.", "from": "your information", "group": "3", "title": "Merger/Acquisition; ", "to": "a busines partner", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "**** 4. Transfer of your personal data\n\nWe strive to process your personal data within the EU/EEA area. However, your personal data will be transferred outside the EU/EEA in some situations, such as when we share your information with a business partner or subcontractor operating outside the EU/EEA.", "from": "your information", "group": "3", "title": "Other; ", "to": "a subcontractor", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Purpose | To pair your mobile device with a vehicle to enable Polestar Connect services through the Polestar app, such as the ability to remotely control your vehicle from your mobile device (e.g. unlock/lock doors, remote air conditioning start/stop, and receive theft alarm notifications) and to view the status of your vehicle (e.g. battery level, charging status and door lock status)., When pairing the Polestar app with your vehicle, you must enable Bluetooth and the location services in your mobile device and select at least \u201cAllow Once\u201d for iOS or \u201dAsk every time\u201d for Android., To see the last parked position of the vehicle and the position of your mobile device in relation to the vehicle on a map. This is only visible locally in the Polestar app and you must have the location services enabled in you r mobile device and select at least \u201dAlways While Using App\u201d for iOS or \u201dAsk every time\u201d for Android. The car\u0027s location can be sent to Apple Maps, Google Maps or Waze (depending on your selection and operating system).", "from": "vehicle", "group": "12", "title": "Basic service or feature; ", "to": "battery level", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Purpose | To pair your mobile device with a vehicle to enable Polestar Connect services through the Polestar app, such as the ability to remotely control your vehicle from your mobile device (e.g. unlock/lock doors, remote air conditioning start/stop, and receive theft alarm notifications) and to view the status of your vehicle (e.g. battery level, charging status and door lock status)., When pairing the Polestar app with your vehicle, you must enable Bluetooth and the location services in your mobile device and select at least \u201cAllow Once\u201d for iOS or \u201dAsk every time\u201d for Android., To see the last parked position of the vehicle and the position of your mobile device in relation to the vehicle on a map. This is only visible locally in the Polestar app and you must have the location services enabled in you r mobile device and select at least \u201dAlways While Using App\u201d for iOS or \u201dAsk every time\u201d for Android. The car\u0027s location can be sent to Apple Maps, Google Maps or Waze (depending on your selection and operating system).", "from": "vehicle", "group": "12", "title": "Basic service or feature; ", "to": "charging status", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Purpose | To pair your mobile device with a vehicle to enable Polestar Connect services through the Polestar app, such as the ability to remotely control your vehicle from your mobile device (e.g. unlock/lock doors, remote air conditioning start/stop, and receive theft alarm notifications) and to view the status of your vehicle (e.g. battery level, charging status and door lock status)., When pairing the Polestar app with your vehicle, you must enable Bluetooth and the location services in your mobile device and select at least \u201cAllow Once\u201d for iOS or \u201dAsk every time\u201d for Android., To see the last parked position of the vehicle and the position of your mobile device in relation to the vehicle on a map. This is only visible locally in the Polestar app and you must have the location services enabled in you r mobile device and select at least \u201dAlways While Using App\u201d for iOS or \u201dAsk every time\u201d for Android. The car\u0027s location can be sent to Apple Maps, Google Maps or Waze (depending on your selection and operating system).", "from": "vehicle", "group": "12", "title": "Basic service or feature; ", "to": "door lock status", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Purpose | To pair your mobile device with a vehicle to enable Polestar Connect services through the Polestar app, such as the ability to remotely control your vehicle from your mobile device (e.g. unlock/lock doors, remote air conditioning start/stop, and receive theft alarm notifications) and to view the status of your vehicle (e.g. battery level, charging status and door lock status)., When pairing the Polestar app with your vehicle, you must enable Bluetooth and the location services in your mobile device and select at least \u201cAllow Once\u201d for iOS or \u201dAsk every time\u201d for Android., To see the last parked position of the vehicle and the position of your mobile device in relation to the vehicle on a map. This is only visible locally in the Polestar app and you must have the location services enabled in you r mobile device and select at least \u201dAlways While Using App\u201d for iOS or \u201dAsk every time\u201d for Android. The car\u0027s location can be sent to Apple Maps, Google Maps or Waze (depending on your selection and operating system).", "from": "battery level", "group": "12", "title": "Basic service or feature; ", "to": "polestar app", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "polestar app", "group": "33", "title": "Basic service or feature; ", "to": "vehicle identification number ", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "polestar app", "group": "33", "title": "Basic service or feature; Additional service or feature; ", "to": "location", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "polestar app", "group": "33", "title": "Basic service or feature; Basic service or feature; Basic service or feature; Basic service or feature; Basic service or feature; ", "to": "contact information", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "polestar app", "group": "33", "title": "Basic service or feature; Additional service or feature; ", "to": "home address", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "polestar app", "group": "33", "title": "Basic service or feature; Basic service or feature; Additional service or feature; ", "to": "e-mail address", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "polestar app", "group": "33", "title": "Basic service or feature; Basic service or feature; Basic service or feature; Basic service or feature; Basic service or feature; Basic service or feature; ", "to": "phone number", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "polestar app", "group": "33", "title": "Basic service or feature; Additional service or feature; Basic service or feature; ", "to": "insurance detail", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "polestar app", "group": "33", "title": "Basic service or feature; Additional service or feature; ", "to": "policy", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "polestar app", "group": "33", "title": "Basic service or feature; Additional service or feature; ", "to": "claim number", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "polestar app", "group": "33", "title": "Basic service or feature; Additional service or feature; ", "to": "transaction-related data", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "polestar app", "group": "33", "title": "Basic service or feature; Additional service or feature; ", "to": "damage cause", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Push notifications | \n | Purpose | To send you requested push notifications from the Polestar app, such as reminders that the vehicle is unlocked, or for upcoming maintenance and service reminders for your vehicle.", "from": "polestar app", "group": "42", "title": "Other; ", "to": "vehicle status", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Push notifications | \n | Purpose | To send you requested push notifications from the Polestar app, such as reminders that the vehicle is unlocked, or for upcoming maintenance and service reminders for your vehicle.", "from": "polestar app", "group": "42", "title": "Other; ", "to": "maintenance reminder", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Push notifications | \n | Purpose | To send you requested push notifications from the Polestar app, such as reminders that the vehicle is unlocked, or for upcoming maintenance and service reminders for your vehicle.", "from": "polestar app", "group": "42", "title": "Other; ", "to": "service reminder", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Purpose | To pair your mobile device with a vehicle to enable Polestar Connect services through the Polestar app, such as the ability to remotely control your vehicle from your mobile device (e.g. unlock/lock doors, remote air conditioning start/stop, and receive theft alarm notifications) and to view the status of your vehicle (e.g. battery level, charging status and door lock status)., When pairing the Polestar app with your vehicle, you must enable Bluetooth and the location services in your mobile device and select at least \u201cAllow Once\u201d for iOS or \u201dAsk every time\u201d for Android., To see the last parked position of the vehicle and the position of your mobile device in relation to the vehicle on a map. This is only visible locally in the Polestar app and you must have the location services enabled in you r mobile device and select at least \u201dAlways While Using App\u201d for iOS or \u201dAsk every time\u201d for Android. The car\u0027s location can be sent to Apple Maps, Google Maps or Waze (depending on your selection and operating system).", "from": "charging status", "group": "12", "title": "Basic service or feature; ", "to": "polestar app", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Purpose | To pair your mobile device with a vehicle to enable Polestar Connect services through the Polestar app, such as the ability to remotely control your vehicle from your mobile device (e.g. unlock/lock doors, remote air conditioning start/stop, and receive theft alarm notifications) and to view the status of your vehicle (e.g. battery level, charging status and door lock status)., When pairing the Polestar app with your vehicle, you must enable Bluetooth and the location services in your mobile device and select at least \u201cAllow Once\u201d for iOS or \u201dAsk every time\u201d for Android., To see the last parked position of the vehicle and the position of your mobile device in relation to the vehicle on a map. This is only visible locally in the Polestar app and you must have the location services enabled in you r mobile device and select at least \u201dAlways While Using App\u201d for iOS or \u201dAsk every time\u201d for Android. The car\u0027s location can be sent to Apple Maps, Google Maps or Waze (depending on your selection and operating system).", "from": "door lock status", "group": "12", "title": "Basic service or feature; ", "to": "polestar app", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "name", "group": "13", "title": "Legal requirement; ", "to": "vehicle control", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "name", "group": "28", "title": "Basic service or feature; ", "to": "customer support", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "phone number", "group": "13", "title": "Legal requirement; ", "to": "vehicle control", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "phone number", "group": "28", "title": "Basic service or feature; ", "to": "customer support", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "phone number", "group": "33", "title": "Basic service or feature; Basic service or feature; Basic service or feature; Basic service or feature; Basic service or feature; Basic service or feature; ", "to": "we", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "e-mail address", "group": "13", "title": "Legal requirement; ", "to": "vehicle control", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "e-mail address", "group": "28", "title": "Basic service or feature; ", "to": "customer support", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "e-mail address", "group": "33", "title": "Basic service or feature; Basic service or feature; Additional service or feature; ", "to": "we", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "polestar id", "group": "13", "title": "Legal requirement; ", "to": "vehicle control", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "polestar id", "group": "28", "title": "Basic service or feature; ", "to": "customer support", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "vehicle identification number ", "group": "13", "title": "Legal requirement; ", "to": "vehicle control", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "vehicle identification number ", "group": "33", "title": "Basic service or feature; ", "to": "we", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "vehicle ownership period", "group": "13", "title": "Legal requirement; ", "to": "vehicle control", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "subscription service", "group": "13", "title": "Legal requirement; ", "to": "vehicle control", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "vehicle model and year", "group": "13", "title": "Legal requirement; ", "to": "vehicle control", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Vehicle controls | \n | Categories of personal data | Name, phone number, e-mail address, Polestar ID, Vehicle Identification Number (VIN), vehicle ownership period, subscription services, vehicle model and year and corresponding vehicle specifications.", "from": "vehicle specification", "group": "13", "title": "Legal requirement; ", "to": "vehicle control", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Digital Key | \n | Purpose | To enable the Digital Key for Polestar 2 (the vehicle detects when the connected mobile device is near the vehicle to be able to open it without opening the Polestar app). Location data from the mobile device position is never shared., When creating or using the Digital Key for Polestar 2, you must enable Bluetooth, movement and fitness permission and the location services in your mobile device needs to be set to \u201dAlways\u201d for iOS or \u201dAll the time\u201d for Android.", "from": "mobile device", "group": "17", "title": "Operational Integrity and Security; ", "to": "location data", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Digital Key | \n | Purpose | To enable the Digital Key for Polestar 2 (the vehicle detects when the connected mobile device is near the vehicle to be able to open it without opening the Polestar app). Location data from the mobile device position is never shared., When creating or using the Digital Key for Polestar 2, you must enable Bluetooth, movement and fitness permission and the location services in your mobile device needs to be set to \u201dAlways\u201d for iOS or \u201dAll the time\u201d for Android.", "from": "mobile device", "group": "17", "title": "Operational Integrity and Security; ", "to": "movement", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Digital Key | \n | Purpose | To enable the Digital Key for Polestar 2 (the vehicle detects when the connected mobile device is near the vehicle to be able to open it without opening the Polestar app). Location data from the mobile device position is never shared., When creating or using the Digital Key for Polestar 2, you must enable Bluetooth, movement and fitness permission and the location services in your mobile device needs to be set to \u201dAlways\u201d for iOS or \u201dAll the time\u201d for Android.", "from": "mobile device", "group": "17", "title": "Operational Integrity and Security; ", "to": "fitnes", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Digital Key | \n | Categories of personal data | Polestar ID, Vehicle Identification Number (VIN), Bluetooth, location data, iBeacons, data about your movement and fitness from your mobile device and number plate (if applicable).", "from": "mobile device", "group": "18", "title": "Other; ", "to": "data about your movement", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Digital Key | \n | Categories of personal data | Polestar ID, Vehicle Identification Number (VIN), Bluetooth, location data, iBeacons, data about your movement and fitness from your mobile device and number plate (if applicable).", "from": "mobile device", "group": "18", "title": "Other; ", "to": "data about your fitnes", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Digital Key | \n | Purpose | To enable the Digital Key for Polestar 2 (the vehicle detects when the connected mobile device is near the vehicle to be able to open it without opening the Polestar app). Location data from the mobile device position is never shared., When creating or using the Digital Key for Polestar 2, you must enable Bluetooth, movement and fitness permission and the location services in your mobile device needs to be set to \u201dAlways\u201d for iOS or \u201dAll the time\u201d for Android.", "from": "location data", "group": "17", "title": "Operational Integrity and Security; ", "to": "polestar app", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Digital Key | \n | Purpose | To enable the Digital Key for Polestar 2 (the vehicle detects when the connected mobile device is near the vehicle to be able to open it without opening the Polestar app). Location data from the mobile device position is never shared., When creating or using the Digital Key for Polestar 2, you must enable Bluetooth, movement and fitness permission and the location services in your mobile device needs to be set to \u201dAlways\u201d for iOS or \u201dAll the time\u201d for Android.", "from": "movement", "group": "17", "title": "Operational Integrity and Security; ", "to": "polestar app", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Digital Key | \n | Purpose | To enable the Digital Key for Polestar 2 (the vehicle detects when the connected mobile device is near the vehicle to be able to open it without opening the Polestar app). Location data from the mobile device position is never shared., When creating or using the Digital Key for Polestar 2, you must enable Bluetooth, movement and fitness permission and the location services in your mobile device needs to be set to \u201dAlways\u201d for iOS or \u201dAll the time\u201d for Android.", "from": "fitnes", "group": "17", "title": "Operational Integrity and Security; ", "to": "polestar app", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Digital Key | \n | Categories of personal data | Polestar ID, Vehicle Identification Number (VIN), Bluetooth, location data, iBeacons, data about your movement and fitness from your mobile device and number plate (if applicable).", "from": "data about your movement", "group": "18", "title": "Other; ", "to": "polestar app", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Digital Key | \n | Categories of personal data | Polestar ID, Vehicle Identification Number (VIN), Bluetooth, location data, iBeacons, data about your movement and fitness from your mobile device and number plate (if applicable).", "from": "data about your fitnes", "group": "18", "title": "Other; ", "to": "polestar app", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "customer", "group": "28", "title": "Basic service or feature; ", "to": "name", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "customer", "group": "28", "title": "Basic service or feature; ", "to": "phone number", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "customer", "group": "28", "title": "Basic service or feature; ", "to": "e-mail address", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "customer", "group": "28", "title": "Basic service or feature; ", "to": "chat message", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "customer", "group": "28", "title": "Basic service or feature; ", "to": "polestar id", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "customer", "group": "28", "title": "Basic service or feature; ", "to": "app version", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "customer", "group": "28", "title": "Basic service or feature; ", "to": "device model name", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "customer", "group": "28", "title": "Basic service or feature; ", "to": "fcm token", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "customer", "group": "28", "title": "Basic service or feature; ", "to": "os version", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "customer", "group": "28", "title": "Basic service or feature; ", "to": "vocmo appid", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Retention | Customer support chats and cases are stored In our Customer Relationship Management system up to four (4) years after the customer relationship has ended.", "from": "customer", "group": "30", "title": "Basic service or feature; ", "to": "customer support chat", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Retention | Customer support chats and cases are stored In our Customer Relationship Management system up to four (4) years after the customer relationship has ended.", "from": "customer", "group": "30", "title": "Basic service or feature; ", "to": "case", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "chat message", "group": "28", "title": "Basic service or feature; ", "to": "customer support", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "app version", "group": "28", "title": "Basic service or feature; ", "to": "customer support", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "device model name", "group": "28", "title": "Basic service or feature; ", "to": "customer support", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "fcm token", "group": "28", "title": "Basic service or feature; ", "to": "customer support", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "os version", "group": "28", "title": "Basic service or feature; ", "to": "customer support", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Categories of personal data | When using the chat, : Name, phone number, e-mail address (stored under account details in the app) and your chat message, When sending message, : Phone number, e-mail address, Polestar ID, app version, device model name, FCM Token (token for notifications), OS version (if applicable) and Vocmo AppID.", "from": "vocmo appid", "group": "28", "title": "Basic service or feature; ", "to": "customer support", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Retention | Customer support chats and cases are stored In our Customer Relationship Management system up to four (4) years after the customer relationship has ended.", "from": "customer support chat", "group": "30", "title": "Basic service or feature; ", "to": "customer relationship management system", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Customer support | \n | Retention | Customer support chats and cases are stored In our Customer Relationship Management system up to four (4) years after the customer relationship has ended.", "from": "case", "group": "30", "title": "Basic service or feature; ", "to": "customer relationship management system", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "location", "group": "33", "title": "Basic service or feature; Additional service or feature; ", "to": "we", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "contact information", "group": "33", "title": "Basic service or feature; Basic service or feature; Basic service or feature; Basic service or feature; Basic service or feature; ", "to": "we", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "home address", "group": "33", "title": "Basic service or feature; Additional service or feature; ", "to": "we", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "insurance detail", "group": "33", "title": "Basic service or feature; Additional service or feature; Basic service or feature; ", "to": "we", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "policy", "group": "33", "title": "Basic service or feature; Additional service or feature; ", "to": "we", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "claim number", "group": "33", "title": "Basic service or feature; Additional service or feature; ", "to": "we", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "transaction-related data", "group": "33", "title": "Basic service or feature; Additional service or feature; ", "to": "we", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Categories of personal data | From the Polestar app, : Vehicle Identification Number (VIN) and your location., Depending on the nature and scope of the request, we may need to process additional information necessary for the delivery of requested assistance, for example: contact information (home address, e-mail address, phone number), insurance details (policy and claim number), transaction-related data, damage cause and information about the workshop handling the repair.", "from": "damage cause", "group": "33", "title": "Basic service or feature; Additional service or feature; ", "to": "we", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Roadside Assistance from the Polestar app | \n | Legal basis | Performance of the contract to provide roadside assistance services (GDPR, article 6.1 (b)) and, legitimate interest, to administer your request (GDPR, article 6.1 (f))., Contact us if you want to learn more about how we balance your interests against ours.", "from": "request", "group": "34", "title": "Legal requirement; Basic service or feature; ", "to": "polestar", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Push notifications | \n | Purpose | To send you requested push notifications from the Polestar app, such as reminders that the vehicle is unlocked, or for upcoming maintenance and service reminders for your vehicle.", "from": "vehicle status", "group": "42", "title": "Other; ", "to": "user", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Push notifications | \n | Purpose | To send you requested push notifications from the Polestar app, such as reminders that the vehicle is unlocked, or for upcoming maintenance and service reminders for your vehicle.", "from": "maintenance reminder", "group": "42", "title": "Other; ", "to": "user", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Push notifications | \n | Purpose | To send you requested push notifications from the Polestar app, such as reminders that the vehicle is unlocked, or for upcoming maintenance and service reminders for your vehicle.", "from": "service reminder", "group": "42", "title": "Other; ", "to": "user", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "ip address", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "geography", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "city", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "country", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "region", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "continent", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "device information", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "device type", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "device category", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "device language setting", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "device brand", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "device model", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "operating system", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "version", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "vehicle connection status", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "vehicle model", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "vehicle year", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "owner type", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "order type", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "usage data", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "click in  app", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "feature used", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "page viewed", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}, {"arrows": "to", "color": "ff000000", "description": "_table_ Analytics | \n | Categories of personal data | IP address, geography (city, country, region and continent based on your IP address), device information (such as device type, device category, device language setting, device brand, device model, operating system and version), whether you are logged in or not, vehicle connection status (if you have paired your Polestar App with the vehicle), vehicle model, vehicle year, owner type (fleet, private or guest), order type (fleet, lease or cash) and usage data (such as clicks in the app, features used,, pages viewed and potential issues or errors).", "from": "potential issue or error", "group": "48", "title": "Analytics or Research; ", "to": "analytic", "width": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": true,
+        "filter": [
+            "physics"
+        ]
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": false,
+        "repulsion": {
+            "centralGravity": 0.2,
+            "damping": 0.09,
+            "nodeDistance": 100,
+            "springConstant": 0.05,
+            "springLength": 200
+        },
+        "solver": "repulsion",
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+                  // if this network requires displaying the configure window,
+                  // put it in its div
+                  options.configure["container"] = document.getElementById("config");
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+                    network.on("selectNode", neighbourhoodHighlight);
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
