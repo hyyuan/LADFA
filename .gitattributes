@@ -6,6 +6,9 @@ data/*.pdf linguist-documentation
 # Mark test/sample data as vendored (excluded from stats)
 data/* linguist-vendored
 
-# Mark supplementary materials as documentation
-supplementary_materials/html_data/*.html linguist-documentation
-supplementary_materials/html_data/*.htm linguist-documentation
+# Mark supplementary materials as documentation (exclude from language stats)
+supplementary_materials/** linguist-documentation
+
+# Mark all HTML files as documentation
+*.html linguist-documentation
+*.htm linguist-documentation
